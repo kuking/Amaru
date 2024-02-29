@@ -9,8 +9,8 @@ const (
 	TagToken  TokenType = 1
 
 	InvalidTokenID TokenID = 0xffffffff
-
-	MaxTokenLen int = 25
+	InvalidDocID   DocID   = 0xffffffff
+	MaxTokenLen    int     = 25
 )
 
 type Amaru interface {
@@ -42,6 +42,6 @@ type Documents interface {
 	Get(did DocID) *Document
 	Count() int
 	Add(url string, ranking float32) DocID
-	Load()
-	Save()
+	Load() error
+	Save() error
 }

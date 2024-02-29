@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetToken(t *testing.T) {
-	testFilePath := getTempFile(t, "test_tokens_*.json")
+	testFilePath := getTempFile(t, "test_tokens_*")
 	defer os.Remove(testFilePath)
 
 	tokens := NewTokens(testFilePath, true)
@@ -22,7 +22,7 @@ func TestGetToken(t *testing.T) {
 }
 
 func TestGetTokenMultipleTypesAndTimes(t *testing.T) {
-	testFilePath := getTempFile(t, "test_tokens_*.json")
+	testFilePath := getTempFile(t, "test_tokens_*")
 	defer os.Remove(testFilePath)
 
 	tokens := NewTokens(testFilePath, true)
@@ -38,15 +38,15 @@ func TestGetTokenMultipleTypesAndTimes(t *testing.T) {
 }
 
 func TestReadOnlyTokens(t *testing.T) {
-	testFilePath := getTempFile(t, "test_tokens_*.json")
+	testFilePath := getTempFile(t, "test_tokens_*")
 	defer os.Remove(testFilePath)
 
 	tokens := NewTokens(testFilePath, false)
 	assert.Equal(t, Amaru.InvalidTokenID, tokens.Add(Amaru.TextToken, "test"))
 }
 
-func TestSaveLoad(t *testing.T) {
-	testFilePath := getTempFile(t, "test_tokens_*.json")
+func TestTokensSaveLoad(t *testing.T) {
+	testFilePath := getTempFile(t, "test_tokens_*")
 	defer os.Remove(testFilePath)
 
 	tokens := NewTokens(testFilePath, true)
@@ -73,7 +73,7 @@ func TestSaveLoad(t *testing.T) {
 }
 
 func TestAddLongText(t *testing.T) {
-	testFilePath := getTempFile(t, "test_tokens_*.json")
+	testFilePath := getTempFile(t, "test_tokens_*")
 	defer os.Remove(testFilePath)
 
 	text := "Smiles😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
