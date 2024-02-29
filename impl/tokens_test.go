@@ -43,6 +43,8 @@ func TestReadOnlyTokens(t *testing.T) {
 
 	tokens := NewTokens(testFilePath, false)
 	assert.Equal(t, Amaru.InvalidTokenID, tokens.Add(Amaru.TextToken, "test"))
+
+	assert.Error(t, tokens.Save())
 }
 
 func TestTokensSaveLoad(t *testing.T) {

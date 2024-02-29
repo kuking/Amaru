@@ -54,6 +54,8 @@ func TestReadOnlyDocuments(t *testing.T) {
 	docs := NewDocuments(testFilePath, false)
 	did := docs.Add("some://url", 1)
 	assert.Equal(t, Amaru.InvalidDocID, did)
+
+	assert.Error(t, docs.Save())
 }
 
 func TestDocumentsSaveLoad(t *testing.T) {

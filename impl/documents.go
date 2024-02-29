@@ -2,6 +2,7 @@ package impl
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"github.com/kukino/Amaru"
 	"os"
@@ -81,6 +82,9 @@ func (d *documentsImpl) Load() error {
 }
 
 func (d *documentsImpl) Save() error {
+	if !d.writable {
+		return errors.New("not writable")
+	}
 	file, err := os.Create(d.path)
 	if err != nil {
 		return err

@@ -102,6 +102,9 @@ func (t *tokensImpl) Load() error {
 }
 
 func (t *tokensImpl) Save() error {
+	if !t.writable {
+		return errors.New("not writable")
+	}
 	file, err := os.Create(t.path)
 	if err != nil {
 		return err
