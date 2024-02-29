@@ -14,6 +14,9 @@ func (a *amaruImpl) Load() error {
 	if err := a.tokens.Load(); err != nil {
 		return err
 	}
+	if err := a.documents.Save(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -21,8 +24,15 @@ func (a *amaruImpl) Save() error {
 	if err := a.tokens.Save(); err != nil {
 		return err
 	}
-	//a.documents.Save()
+	if err := a.documents.Save(); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (a *amaruImpl) Clear() {
+	a.tokens.Clear()
+	a.documents.Clear()
 }
 
 func (a *amaruImpl) Tokens() Amaru.Tokens {
@@ -35,10 +45,10 @@ func (a *amaruImpl) Documents() Amaru.Documents {
 
 func NewAmaru(storageFolder string, writable bool) Amaru.Amaru {
 	tokensFile := path.Join(storageFolder, "tokens")
-
+	documentsFile := path.Join(storageFolder, "documents")
 	impl := amaruImpl{
 		tokens:    NewTokens(tokensFile, writable),
-		documents: nil,
+		documents: NewDocuments(documentsFile, writable),
 	}
 	impl.Load()
 	return &impl

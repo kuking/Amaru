@@ -18,6 +18,7 @@ type Amaru interface {
 	Documents() Documents
 	Load() error
 	Save() error
+	Clear()
 }
 
 type Token struct {
@@ -32,6 +33,7 @@ type Tokens interface {
 	Add(tokenType TokenType, text string) TokenID
 	Load() error
 	Save() error
+	Clear()
 }
 
 type Document struct {
@@ -44,4 +46,5 @@ type Documents interface {
 	Add(url string, ranking float32) DocID
 	Load() error
 	Save() error
+	Clear()
 }
