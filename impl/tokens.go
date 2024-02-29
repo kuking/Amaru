@@ -41,6 +41,7 @@ func (t *tokensImpl) Add(tokenType Amaru.TokenType, text string) Amaru.TokenID {
 	if !t.writable {
 		return Amaru.InvalidTokenID
 	}
+	text = sanitiseTokenText(text)
 
 	tid := t.GetId(tokenType, text)
 	if tid != Amaru.InvalidTokenID {
@@ -48,9 +49,6 @@ func (t *tokensImpl) Add(tokenType Amaru.TokenType, text string) Amaru.TokenID {
 	}
 
 	tid = Amaru.TokenID(t.Count())
-
-	text = sanitiseTokenText(text)
-
 	token := Amaru.Token{
 		Type: tokenType,
 		Text: text,
@@ -75,12 +73,12 @@ func sanitiseTokenText(text string) string {
 }
 
 func (t *tokensImpl) Load() error {
+	t.Clear()
 	file, err := os.Open(t.path)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	t.Clear()
 	for {
 		var tType uint8
 		if err := binary.Read(file, binary.LittleEndian, &tType); err != nil {
@@ -136,10 +134,6 @@ func (t *tokensImpl) Clear() {
 }
 
 func NewTokens(tokensFile string, writable bool) Amaru.Tokens {
-
-	cache := make(map[Amaru.TokenType]map[string]Amaru.TokenID)
-	cache[Amaru.TextToken] = make(map[string]Amaru.TokenID)
-	cache[Amaru.TagToken] = make(map[string]Amaru.TokenID)
 	tokens := tokensImpl{
 		path:     tokensFile,
 		writable: writable,

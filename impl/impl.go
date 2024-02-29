@@ -10,33 +10,36 @@ type amaruImpl struct {
 	documents Amaru.Documents
 }
 
-func (a amaruImpl) Load() error {
+func (a *amaruImpl) Load() error {
 	if err := a.tokens.Load(); err != nil {
 		return err
 	}
-	//TODO implement me
-	panic("implement me")
+	return nil
 }
 
-func (a amaruImpl) Save() error {
-	//TODO implement me
-	panic("implement me")
+func (a *amaruImpl) Save() error {
+	if err := a.tokens.Save(); err != nil {
+		return err
+	}
+	//a.documents.Save()
+	return nil
 }
 
-func (a amaruImpl) Tokens() Amaru.Tokens {
+func (a *amaruImpl) Tokens() Amaru.Tokens {
 	return a.tokens
 }
 
-func (a amaruImpl) Documents() Amaru.Documents {
+func (a *amaruImpl) Documents() Amaru.Documents {
 	return a.documents
 }
 
-func NewAmaru(storagePath string, writable bool) Amaru.Amaru {
-	tokensFile := path.Join(storagePath, "tokens")
+func NewAmaru(storageFolder string, writable bool) Amaru.Amaru {
+	tokensFile := path.Join(storageFolder, "tokens")
 
 	impl := amaruImpl{
 		tokens:    NewTokens(tokensFile, writable),
 		documents: nil,
 	}
-	return impl
+	impl.Load()
+	return &impl
 }
