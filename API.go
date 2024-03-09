@@ -48,3 +48,11 @@ type Documents interface {
 	Save() error
 	Clear()
 }
+
+type Anthology interface {
+	Dossier(tid TokenID) *[]DocID // Readonly
+	Add(tid TokenID, did DocID)
+	Compact() error
+	Load() error
+	Close() error
+}
