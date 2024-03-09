@@ -61,6 +61,7 @@ type Anthology interface {
 	Add(tid TokenID, did DocID)
 	Compact() error
 	Load() error
+	Save() error
 	Exist() bool
 	Clear()
 	Close() error

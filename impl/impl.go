@@ -20,6 +20,9 @@ func (a *amaruImpl) Load() error {
 	if err := a.documents.Load(); err != nil {
 		return err
 	}
+	if err := a.anthology.Load(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -31,6 +34,9 @@ func (a *amaruImpl) Save() error {
 		return err
 	}
 	if err := a.documents.Save(); err != nil {
+		return err
+	}
+	if err := a.anthology.Save(); err != nil {
 		return err
 	}
 	return nil
@@ -84,9 +90,6 @@ func NewAmaru(storageFolder string, writable bool) (Amaru.Amaru, error) {
 		tokens:    NewTokens(tokensFile, writable),
 		documents: NewDocuments(documentsFile, writable),
 		anthology: anthology,
-	}
-	if err = impl.Load(); err != nil {
-		return nil, err
 	}
 	return &impl, nil
 }

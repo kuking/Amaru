@@ -4,7 +4,6 @@ import (
 	"github.com/edsrzf/mmap-go"
 	"github.com/kukino/Amaru"
 	"os"
-	"path"
 )
 
 type anthologyImpl struct {
@@ -82,6 +81,16 @@ func (a *anthologyImpl) Load() error {
 	return nil
 }
 
+func (a *anthologyImpl) Save() error {
+	if err := a.iMMap.Flush(); err != nil {
+		return err
+	}
+	if err := a.aMMap.Flush(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (a *anthologyImpl) Exist() bool {
 	return true
 }
@@ -117,7 +126,7 @@ func (a *anthologyImpl) Create() error {
 func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, error) {
 	anthology := anthologyImpl{
 		aPath: anthologyBasePath,
-		iPath: path.Join(anthologyBasePath, ".idx"),
+		iPath: anthologyBasePath + ".idx",
 	}
 	return &anthology, nil
 }
