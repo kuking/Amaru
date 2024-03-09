@@ -22,6 +22,12 @@ func (d *documentsImpl) Clear() {
 	d.cache = map[string]Amaru.DocID{}
 }
 
+func (d *documentsImpl) Create() error {
+	d.Clear()
+	_ = os.Remove(d.path) // ignore if no file
+	return nil
+}
+
 func (d *documentsImpl) Get(did Amaru.DocID) *Amaru.Document {
 	if int(did) >= d.Count() {
 		return nil
@@ -98,6 +104,13 @@ func (d *documentsImpl) Save() error {
 		}
 	}
 	return nil
+}
+
+func (d *documentsImpl) Exist() bool {
+	if stat, err := os.Stat(d.path); err == nil {
+		return !stat.IsDir()
+	}
+	return false
 }
 
 func NewDocuments(documentsFile string, writable bool) Amaru.Documents {

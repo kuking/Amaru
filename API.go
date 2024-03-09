@@ -16,9 +16,12 @@ const (
 type Amaru interface {
 	Tokens() Tokens
 	Documents() Documents
+	Anthology() Anthology
 	Load() error
 	Save() error
+	Exist() bool
 	Clear()
+	Create() error
 }
 
 type Token struct {
@@ -33,7 +36,9 @@ type Tokens interface {
 	Add(tokenType TokenType, text string) TokenID
 	Load() error
 	Save() error
+	Exist() bool
 	Clear()
+	Create() error
 }
 
 type Document struct {
@@ -46,7 +51,9 @@ type Documents interface {
 	Add(url string, ranking float32) DocID
 	Load() error
 	Save() error
+	Exist() bool
 	Clear()
+	Create() error
 }
 
 type Anthology interface {
@@ -54,5 +61,8 @@ type Anthology interface {
 	Add(tid TokenID, did DocID)
 	Compact() error
 	Load() error
+	Exist() bool
+	Clear()
 	Close() error
+	Create() error
 }

@@ -128,6 +128,19 @@ func (t *tokensImpl) Save() error {
 	return nil
 }
 
+func (t *tokensImpl) Exist() bool {
+	if stat, err := os.Stat(t.path); err == nil {
+		return !stat.IsDir()
+	}
+	return false
+}
+
+func (t *tokensImpl) Create() error {
+	t.Clear()
+	_ = os.Remove(t.path) // ignore if no file
+	return nil
+}
+
 func (t *tokensImpl) Clear() {
 	cache := make(map[Amaru.TokenType]map[string]Amaru.TokenID)
 	cache[Amaru.TextToken] = make(map[string]Amaru.TokenID)
