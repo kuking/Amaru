@@ -37,15 +37,15 @@ func (t *tokensImpl) Count() int {
 	return len(t.tokens)
 }
 
-func (t *tokensImpl) Add(tokenType Amaru.TokenType, text string) Amaru.TokenID {
+func (t *tokensImpl) Add(tokenType Amaru.TokenType, text string) (Amaru.TokenID, string) {
 	if !t.writable {
-		return Amaru.InvalidTokenID
+		return Amaru.InvalidTokenID, text
 	}
 	text = sanitiseTokenText(text)
 
 	tid := t.GetId(tokenType, text)
 	if tid != Amaru.InvalidTokenID {
-		return tid
+		return tid, text
 	}
 
 	tid = Amaru.TokenID(t.Count())
@@ -56,7 +56,7 @@ func (t *tokensImpl) Add(tokenType Amaru.TokenType, text string) Amaru.TokenID {
 	t.tokens = append(t.tokens, token)
 	t.cache[tokenType][text] = tid
 
-	return tid
+	return tid, text
 }
 
 func sanitiseTokenText(text string) string {

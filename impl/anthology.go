@@ -9,12 +9,14 @@ import (
 type anthologyImpl struct {
 	aPath string
 	aFile *os.File
-	aSize int64
 	aMMap mmap.MMap
 	iPath string
 	iFile *os.File
-	iSize int64
 	iMMap mmap.MMap
+
+	defaultDossierCapacity  uint32
+	defaultAnthologySizeMiB int64
+	defaultIndexSizeTks     int64
 }
 
 func (a *anthologyImpl) Dossier(tid Amaru.TokenID) *[]Amaru.DocID {
@@ -22,9 +24,15 @@ func (a *anthologyImpl) Dossier(tid Amaru.TokenID) *[]Amaru.DocID {
 	panic("implement me")
 }
 
-func (a *anthologyImpl) Add(tid Amaru.TokenID, did Amaru.DocID) {
-	//TODO implement me
-	panic("implement me")
+func (a *anthologyImpl) Add(did Amaru.DocID, tid Amaru.TokenID) {
+	offset := a.tidOffset(tid)
+	if offset == uint64(0xffff_ffff_ffff_ffff) {
+		offset = a.newDossier(tid, a.defaultDossierCapacity)
+	}
+
+	if !a.dossierAddDocID(offset, did) {
+		panic("could not add the did into this tid ...have you run out of initial space?")
+	}
 }
 
 func (a *anthologyImpl) Compact() error {
@@ -40,10 +48,7 @@ func (a *anthologyImpl) Load() error {
 	}
 	if fi, err := a.aFile.Stat(); err == nil {
 		if fi.Size() == 0 {
-			a.aFile.Truncate(1_000_000_000)
-			a.aSize = 1_000_000_000
-		} else {
-			a.aSize = fi.Size()
+			a.aFile.Truncate(a.defaultAnthologySizeMiB * 1024 * 1024)
 		}
 	} else {
 		return err
@@ -60,11 +65,8 @@ func (a *anthologyImpl) Load() error {
 	empty := false
 	if fi, err := a.iFile.Stat(); err == nil {
 		if fi.Size() == 0 {
-			a.iFile.Truncate(100_000)
-			a.iSize = 1000_000
+			a.iFile.Truncate(a.defaultIndexSizeTks * int64(Dossier_TokenIDSize))
 			empty = true
-		} else {
-			a.iSize = fi.Size()
 		}
 	} else {
 		return err
@@ -125,8 +127,11 @@ func (a *anthologyImpl) Create() error {
 
 func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, error) {
 	anthology := anthologyImpl{
-		aPath: anthologyBasePath,
-		iPath: anthologyBasePath + ".idx",
+		aPath:                   anthologyBasePath,
+		iPath:                   anthologyBasePath + ".idx",
+		defaultDossierCapacity:  20_000,
+		defaultAnthologySizeMiB: 10_000,
+		defaultIndexSizeTks:     30_000,
 	}
 	return &anthology, nil
 }

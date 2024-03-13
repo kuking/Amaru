@@ -33,7 +33,7 @@ type Tokens interface {
 	Get(tid TokenID) *Token
 	GetId(tokenType TokenType, text string) TokenID
 	Count() int
-	Add(tokenType TokenType, text string) TokenID
+	Add(tokenType TokenType, text string) (TokenID, string)
 	Load() error
 	Save() error
 	Exist() bool
@@ -45,6 +45,7 @@ type Document struct {
 	URL     string
 	Ranking float32
 }
+
 type Documents interface {
 	Get(did DocID) *Document
 	Count() int
@@ -58,7 +59,7 @@ type Documents interface {
 
 type Anthology interface {
 	Dossier(tid TokenID) *[]DocID // Readonly
-	Add(tid TokenID, did DocID)
+	Add(did DocID, tid TokenID)
 	Compact() error
 	Load() error
 	Save() error
