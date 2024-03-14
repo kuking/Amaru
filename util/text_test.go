@@ -20,8 +20,10 @@ func TestNormaliseFancyUnicodeToToASCII(t *testing.T) {
 	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("🅣🅗🅔 🅕🅞🅧 🅙🅤🅜🅟🅔🅓 🅞🅥🅔🅡 🅣🅗🅔 🅛🅐🅩🅨 🅓🅞🅖")) // Filled Circled
 	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝚃𝚑𝚎 𝚏𝚘𝚡 𝚓𝚞𝚖𝚙𝚎𝚍 𝚘𝚟𝚎𝚛 𝚝𝚑𝚎 𝚕𝚊𝚣𝚢 𝚍𝚘𝚐")) // Monospace
 	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("Ｔｈｅ　ｆｏｘ　ｊｕｍｐｅｄ　ｏｖｅｒ　ｔｈｅ　ｌａｚｙ　ｄｏｇ")) // full-width
+	assert.Equal(t, "0123456789", NormaliseFancyUnicodeToToASCII("𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵"))
+	assert.Equal(t, "0123456789", NormaliseFancyUnicodeToToASCII("𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿"))
+	assert.Equal(t, "0123456789", NormaliseFancyUnicodeToToASCII("𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡"))
 
-	//assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("The fox jumped over the lazy dog"))
 	//assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("The fox jumped over the lazy dog"))
 	//assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("The fox jumped over the lazy dog"))
 

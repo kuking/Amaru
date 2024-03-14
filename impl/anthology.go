@@ -130,7 +130,7 @@ func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, err
 		aPath:                   anthologyBasePath,
 		iPath:                   anthologyBasePath + ".idx",
 		defaultDossierCapacity:  50_000,
-		defaultAnthologySizeMiB: 10_000,
+		defaultAnthologySizeMiB: 100_000,
 		defaultIndexSizeTks:     100_000,
 	}
 	return &anthology, nil
