@@ -8,6 +8,7 @@ import (
 
 type amaruImpl struct {
 	writable  bool
+	path      string
 	tokens    Amaru.Tokens
 	documents Amaru.Documents
 	anthology Amaru.Anthology
@@ -77,6 +78,10 @@ func (a *amaruImpl) Anthology() Amaru.Anthology {
 	return a.anthology
 }
 
+func (a *amaruImpl) Path() string {
+	return a.path
+}
+
 func NewAmaru(storageFolder string, writable bool) (Amaru.Amaru, error) {
 	tokensFile := path.Join(storageFolder, "tokens")
 	documentsFile := path.Join(storageFolder, "documents")
@@ -87,6 +92,7 @@ func NewAmaru(storageFolder string, writable bool) (Amaru.Amaru, error) {
 	}
 	impl := amaruImpl{
 		writable:  writable,
+		path:      storageFolder,
 		tokens:    NewTokens(tokensFile, writable),
 		documents: NewDocuments(documentsFile, writable),
 		anthology: anthology,

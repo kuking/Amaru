@@ -1,6 +1,6 @@
 module github.com/kukino/Amaru
 
-go 1.18
+go 1.20
 
 require (
 	github.com/abadojack/whatlanggo v1.0.1

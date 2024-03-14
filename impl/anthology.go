@@ -65,7 +65,7 @@ func (a *anthologyImpl) Load() error {
 	empty := false
 	if fi, err := a.iFile.Stat(); err == nil {
 		if fi.Size() == 0 {
-			a.iFile.Truncate(a.defaultIndexSizeTks * int64(Dossier_TokenIDSize))
+			a.iFile.Truncate(a.defaultIndexSizeTks * 8 /*uint64*/)
 			empty = true
 		}
 	} else {
@@ -129,9 +129,9 @@ func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, err
 	anthology := anthologyImpl{
 		aPath:                   anthologyBasePath,
 		iPath:                   anthologyBasePath + ".idx",
-		defaultDossierCapacity:  20_000,
+		defaultDossierCapacity:  50_000,
 		defaultAnthologySizeMiB: 10_000,
-		defaultIndexSizeTks:     30_000,
+		defaultIndexSizeTks:     100_000,
 	}
 	return &anthology, nil
 }

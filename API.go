@@ -17,6 +17,7 @@ type Amaru interface {
 	Tokens() Tokens
 	Documents() Documents
 	Anthology() Anthology
+	Path() string
 	Load() error
 	Save() error
 	Exist() bool
