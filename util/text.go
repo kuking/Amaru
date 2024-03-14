@@ -1,6 +1,7 @@
 package util
 
 import (
+	"regexp"
 	"strings"
 )
 
@@ -175,4 +176,38 @@ func getNthRune(s string, n int) rune {
 		}
 	}
 	return '?'
+}
+
+func RemoveEmojis(str string) string {
+	regex := `(?U)[\x{1F600}-\x{1F64F}]|` + // Emoticons
+		`[\x{1F300}-\x{1F5FF}]|` + // Miscellaneous symbols and pictographs
+		`[\x{1F680}-\x{1F6FF}]|` + // Transport and map symbols
+		`[\x{1F700}-\x{1F77F}]|` + // Alchemical symbols
+		`[\x{1F780}-\x{1F7FF}]|` + // Geometric Shapes Extended
+		`[\x{1F800}-\x{1F8FF}]|` + // Supplemental Arrows-C
+		`[\x{1F900}-\x{1F9FF}]|` + // Supplemental Symbols and Pictographs
+		`[\x{1FA00}-\x{1FA6F}]|` + // Chess Symbols
+		`[\x{1FA70}-\x{1FAFF}]|` + // Symbols and Pictographs Extended-A
+		`[\x{0080}-\x{00FF}]|` + // Latin-1 supplements
+		`[\x{2000}-\x{206F}]|` + // General Puntuations
+		`[\x{2190}-\x{21FF}]|` + // Arrows
+		`[\x{2300}-\x{23FF}]|` + //  Miscellaneous Technical block
+		`[\x{25A0}-\x{25FF}]|` + //  Geometric Shapes
+		`[\x{2600}-\x{26FF}]|` + // Miscellaneous symbols blocks
+		`[\x{2B00}-\x{2BFF}]|` + // Miscellaneous Symbols and Arrow blocks
+		`[\x{2700}-\x{27BF}]|` + // Dingbats
+		`[\x{2900}-\x{297F}]|` + //Arrows B-Block
+		`[\x{3000}-\x{303F}]|` + // CJF Symbols and puntuations
+		`[\x{3200}-\x{32FF}]|` + // Enclosed CJK Letters
+		`\x{200D}|` + // Zero Width Joiner
+		`\x{FE0F}|` + // Variation Selector-16
+		`[\x{0030}-\x{0039}]\x{FE0F}?\x{20E3}|` + // Keycap sequences (0️⃣ to 9️⃣)
+		`[\x{1F000}-\x{1F02F}]|` + // Mahjong tiles
+		`[\x{1F170}-\x{1F1FF}]|` + // Enclosed Alphanumeric Supplement
+		`[\x{1F1E6}-\x{1F1FF}][\x{1F1E6}-\x{1F1FF}]|` + // Country Flags
+		`[\x{1F200}-\x{1F2FF}]|` + //  Enclosed Ideographic Supplement
+		`[\x{1F0A0}-\x{1F0FF}]` // Playing Cards
+
+	emojiRx := regexp.MustCompile(regex)
+	return emojiRx.ReplaceAllString(str, "")
 }

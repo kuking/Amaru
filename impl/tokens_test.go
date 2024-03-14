@@ -13,7 +13,7 @@ func TestGetToken(t *testing.T) {
 	defer os.Remove(testFilePath)
 
 	tokens := NewTokens(testFilePath, true)
-	tid := tokens.Add(Amaru.TextToken, "example")
+	tid, _ := tokens.Add(Amaru.TextToken, "example")
 
 	token := tokens.Get(tid)
 	assert.NotNil(t, token)
@@ -26,12 +26,12 @@ func TestGetTokenMultipleTypesAndTimes(t *testing.T) {
 	defer os.Remove(testFilePath)
 
 	tokens := NewTokens(testFilePath, true)
-	tid1 := tokens.Add(Amaru.TextToken, "example")
-	tid2 := tokens.Add(Amaru.TagToken, "example")
+	tid1, _ := tokens.Add(Amaru.TextToken, "example")
+	tid2, _ := tokens.Add(Amaru.TagToken, "example")
 	assert.NotEqual(t, t, tid1, tid2, "Different types should hold different values")
 
-	tid1Again := tokens.Add(Amaru.TextToken, "example")
-	tid2Again := tokens.Add(Amaru.TagToken, "example")
+	tid1Again, _ := tokens.Add(Amaru.TextToken, "example")
+	tid2Again, _ := tokens.Add(Amaru.TagToken, "example")
 
 	assert.Equal(t, tid1, tid1Again, "Adding an existing token should return the existing ID")
 	assert.Equal(t, tid2, tid2Again, "Adding an existing token should return the existing ID")
@@ -42,7 +42,8 @@ func TestReadOnlyTokens(t *testing.T) {
 	defer os.Remove(testFilePath)
 
 	tokens := NewTokens(testFilePath, false)
-	assert.Equal(t, Amaru.InvalidTokenID, tokens.Add(Amaru.TextToken, "test"))
+	res, _ := tokens.Add(Amaru.TextToken, "test")
+	assert.Equal(t, Amaru.InvalidTokenID, res)
 
 	assert.Error(t, tokens.Save())
 }
@@ -81,7 +82,7 @@ func TestAddLongText(t *testing.T) {
 	text := "Smiles😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
 	assert.True(t, len([]byte(text)) > Amaru.MaxTokenLen)
 	tokens := NewTokens(testFilePath, true)
-	tid := tokens.Add(Amaru.TextToken, text)
+	tid, _ := tokens.Add(Amaru.TextToken, text)
 
 	token := tokens.Get(tid)
 	assert.True(t, len([]byte(token.Text)) < Amaru.MaxTokenLen)
