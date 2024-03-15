@@ -6,6 +6,7 @@ require (
 	github.com/abadojack/whatlanggo v1.0.1
 	github.com/edsrzf/mmap-go v1.1.0
 	github.com/kljensen/snowball v0.9.0
+	github.com/rivo/uniseg v0.4.7
 	github.com/stretchr/testify v1.8.4
 )
 

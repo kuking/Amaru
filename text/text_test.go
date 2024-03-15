@@ -6,36 +6,33 @@ import (
 )
 
 func TestNormaliseFancyUnicodeToToASCII(t *testing.T) {
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("The fox jumped over the lazy dog"))
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝐓𝐡𝐞 𝐟𝐨𝐱 𝐣𝐮𝐦𝐩𝐞𝐝 𝐨𝐯𝐞𝐫 𝐭𝐡𝐞 𝐥𝐚𝐳𝐲 𝐝𝐨𝐠")) //Bold
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝑻𝒉𝒆 𝒇𝒐𝒙 𝒋𝒖𝒎𝒑𝒆𝒅 𝒐𝒗𝒆𝒓 𝒕𝒉𝒆 𝒍𝒂𝒛𝒚 𝒅𝒐𝒈")) //Bold-Italic
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝒯𝒽𝑒 𝒻𝑜𝓍 𝒿𝓊𝓂𝓅𝑒𝒹 𝑜𝓋𝑒𝓇 𝓉𝒽𝑒 𝓁𝒶𝓏𝓎 𝒹𝑜𝑔")) //Script-Cursive
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝓣𝓱𝓮 𝓯𝓸𝔁 𝓳𝓾𝓶𝓹𝓮𝓭 𝓸𝓿𝓮𝓻 𝓽𝓱𝓮 𝓵𝓪𝔃𝔂 𝓭𝓸𝓰")) //Script-CursiveBold
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝙏𝙝𝙚 𝙛𝙤𝙭 𝙟𝙪𝙢𝙥𝙚𝙙 𝙤𝙫𝙚𝙧 𝙩𝙝𝙚 𝙡𝙖𝙯𝙮 𝙙𝙤𝙜")) //Monospaced
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝖳𝗁𝖾 𝖿𝗈𝗑 𝗃𝗎𝗆𝗉𝖾𝖽 𝗈𝗏𝖾𝗋 𝗍𝗁𝖾 𝗅𝖺𝗓𝗒 𝖽𝗈𝗀")) //sans-serif
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝗧𝗵𝗲 𝗳𝗼𝘅 𝗷𝘂𝗺𝗽𝗲𝗱 𝗼𝘃𝗲𝗿 𝘁𝗵𝗲 𝗹𝗮𝘇𝘆 𝗱𝗼𝗴")) //BoldSans-serif
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝑇ℎ𝑒 𝑓𝑜𝑥 𝑗𝑢𝑚𝑝𝑒𝑑 𝑜𝑣𝑒𝑟 𝑡ℎ𝑒 𝑙𝑎𝑧𝑦 𝑑𝑜𝑔")) //Sans-Serif Italic
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝙏𝙝𝙚 𝙛𝙤𝙭 𝙟𝙪𝙢𝙥𝙚𝙙 𝙤𝙫𝙚𝙧 𝙩𝙝𝙚 𝙡𝙖𝙯𝙮 𝙙𝙤𝙜")) //ItalicBoldSans-serif
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝘛𝘩𝘦 𝘧𝘰𝘹 𝘫𝘶𝘮𝘱𝘦𝘥 𝘰𝘷𝘦𝘳 𝘵𝘩𝘦 𝘭𝘢𝘻𝘺 𝘥𝘰𝘨")) //ItalicBoldSans-serif
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("Ⓣⓗⓔ ⓕⓞⓧ ⓙⓤⓜⓟⓔⓓ ⓞⓥⓔⓡ ⓣⓗⓔ ⓛⓐⓩⓨ ⓓⓞⓖ")) //Circled
+	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("🅣🅗🅔 🅕🅞🅧 🅙🅤🅜🅟🅔🅓 🅞🅥🅔🅡 🅣🅗🅔 🅛🅐🅩🅨 🅓🅞🅖")) //FilledCircled
+	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("🆃🅷🅴 🅵🅾🆇 🅹🆄🅼🅿🅴🅳 🅾🆅🅴🆁 🆃🅷🅴 🅻🅰🆉🆈 🅳🅾🅶")) //FilledCircled
+	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("🅃🄷🄴 🄵🄾🅇 🄹🅄🄼🄿🄴🄳 🄾🅅🄴🅁 🅃🄷🄴 🄻🄰🅉🅈 🄳🄾🄶"))
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝚃𝚑𝚎 𝚏𝚘𝚡 𝚓𝚞𝚖𝚙𝚎𝚍 𝚘𝚟𝚎𝚛 𝚝𝚑𝚎 𝚕𝚊𝚣𝚢 𝚍𝚘𝚐")) //Monospace
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("Ｔｈｅ　ｆｏｘ　ｊｕｍｐｅｄ　ｏｖｅｒ　ｔｈｅ　ｌａｚｙ　ｄｏｇ")) //full-width
+	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("ᴛʜᴇ ꜰᴏx ᴊᴜᴍᴩᴇᴅ ᴏᴠᴇʀ ᴛʜᴇ ʟᴀᴢy ᴅᴏɢ"))
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝕋𝕙𝕖 𝕗𝕠𝕩 𝕛𝕦𝕞𝕡𝕖𝕕 𝕠𝕧𝕖𝕣 𝕥𝕙𝕖 𝕝𝕒𝕫𝕪 𝕕𝕠𝕘"))
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝔗𝔥𝔢 𝔣𝔬𝔵 𝔧𝔲𝔪𝔭𝔢𝔡 𝔬𝔳𝔢𝔯 𝔱𝔥𝔢 𝔩𝔞𝔷𝔶 𝔡𝔬𝔤"))
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝕿𝖍𝖊 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖊𝖉 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌"))
+	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("⠞⠓⠑ ⠋⠕⠭ ⠚⠥⠍⠏⠑⠙ ⠕⠧⠑⠗ ⠞⠓⠑ ⠇⠁⠵⠽ ⠙⠕⠛"))
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("ᵀʰᵉ ᶠᵒˣ ʲᵘᵐᵖᵉᵈ ᵒᵛᵉʳ ᵗʰᵉ ˡᵃᶻʸ ᵈᵒᵍ"))
+	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("T⃣h⃣e⃣ ⃣f⃣o⃣x⃣ ⃣j⃣u⃣m⃣p⃣e⃣d⃣ ⃣o⃣v⃣e⃣r⃣ ⃣t⃣h⃣e⃣ ⃣l⃣a⃣z⃣y⃣ ⃣d⃣o⃣g⃣"))
 
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("The fox jumped over the lazy dog"))
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝐓𝐡𝐞 𝐟𝐨𝐱 𝐣𝐮𝐦𝐩𝐞𝐝 𝐨𝐯𝐞𝐫 𝐭𝐡𝐞 𝐥𝐚𝐳𝐲 𝐝𝐨𝐠")) //Bold
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝑻𝒉𝒆 𝒇𝒐𝒙 𝒋𝒖𝒎𝒑𝒆𝒅 𝒐𝒗𝒆𝒓 𝒕𝒉𝒆 𝒍𝒂𝒛𝒚 𝒅𝒐𝒈")) //Bold-Italic
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝒯𝒽𝑒 𝒻𝑜𝓍 𝒿𝓊𝓂𝓅𝑒𝒹 𝑜𝓋𝑒𝓇 𝓉𝒽𝑒 𝓁𝒶𝓏𝓎 𝒹𝑜𝑔")) //Script-Cursive
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝓣𝓱𝓮 𝓯𝓸𝔁 𝓳𝓾𝓶𝓹𝓮𝓭 𝓸𝓿𝓮𝓻 𝓽𝓱𝓮 𝓵𝓪𝔃𝔂 𝓭𝓸𝓰")) //Script-CursiveBold
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝙏𝙝𝙚 𝙛𝙤𝙭 𝙟𝙪𝙢𝙥𝙚𝙙 𝙤𝙫𝙚𝙧 𝙩𝙝𝙚 𝙡𝙖𝙯𝙮 𝙙𝙤𝙜")) //Monospaced
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝖳𝗁𝖾 𝖿𝗈𝗑 𝗃𝗎𝗆𝗉𝖾𝖽 𝗈𝗏𝖾𝗋 𝗍𝗁𝖾 𝗅𝖺𝗓𝗒 𝖽𝗈𝗀")) //sans-serif
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝗧𝗵𝗲 𝗳𝗼𝘅 𝗷𝘂𝗺𝗽𝗲𝗱 𝗼𝘃𝗲𝗿 𝘁𝗵𝗲 𝗹𝗮𝘇𝘆 𝗱𝗼𝗴")) //BoldSans-serif
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝙏𝙝𝙚 𝙛𝙤𝙭 𝙟𝙪𝙢𝙥𝙚𝙙 𝙤𝙫𝙚𝙧 𝙩𝙝𝙚 𝙡𝙖𝙯𝙮 𝙙𝙤𝙜")) //ItalicBoldSans-serif
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝘛𝘩𝘦 𝘧𝘰𝘹 𝘫𝘶𝘮𝘱𝘦𝘥 𝘰𝘷𝘦𝘳 𝘵𝘩𝘦 𝘭𝘢𝘻𝘺 𝘥𝘰𝘨")) //ItalicBoldSans-serif
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("Ⓣⓗⓔ ⓕⓞⓧ ⓙⓤⓜⓟⓔⓓ ⓞⓥⓔⓡ ⓣⓗⓔ ⓛⓐⓩⓨ ⓓⓞⓖ")) //Circled
-	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("🅣🅗🅔 🅕🅞🅧 🅙🅤🅜🅟🅔🅓 🅞🅥🅔🅡 🅣🅗🅔 🅛🅐🅩🅨 🅓🅞🅖")) //FilledCircled
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("𝚃𝚑𝚎 𝚏𝚘𝚡 𝚓𝚞𝚖𝚙𝚎𝚍 𝚘𝚟𝚎𝚛 𝚝𝚑𝚎 𝚕𝚊𝚣𝚢 𝚍𝚘𝚐")) //Monospace
-	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToToASCII("Ｔｈｅ　ｆｏｘ　ｊｕｍｐｅｄ　ｏｖｅｒ　ｔｈｅ　ｌａｚｙ　ｄｏｇ")) //full-width
-	assert.Equal(t, "0123456789", NormaliseFancyUnicodeToToASCII("𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵"))
-	assert.Equal(t, "0123456789", NormaliseFancyUnicodeToToASCII("𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿"))
-	assert.Equal(t, "0123456789", NormaliseFancyUnicodeToToASCII("𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡"))
-
-	//assert.Equal(t,"Thefoxjumpedoverthelazydog",NormaliseFancyUnicodeToToASCII("Thefoxjumpedoverthelazydog"))
-	//assert.Equal(t,"Thefoxjumpedoverthelazydog",NormaliseFancyUnicodeToToASCII("Thefoxjumpedoverthelazydog"))
-
-	//PROBLEMATICONES
-	//assert.Equal(t,"Thefoxjumpedoverthelazydog",NormaliseFancyUnicodeToToASCII("𝔗𝔥𝔢𝔣𝔬𝔵𝔧𝔲𝔪𝔭𝔢𝔡𝔬𝔳𝔢𝔯𝔱𝔥𝔢𝔩𝔞𝔷𝔶𝔡𝔬𝔤"))//Fraktur
-	//assert.Equal(t,"Thefoxjumpedoverthelazydog",NormaliseFancyUnicodeToToASCII("𝕋𝕙𝕖𝕗𝕠𝕩𝕛𝕦𝕞𝕡𝕖𝕕𝕠𝕧𝕖𝕣𝕥𝕙𝕖𝕝𝕒𝕫𝕪𝕕𝕠𝕘"))//Doublestruck
-	//assert.Equal(t,"Thefoxjumpedoverthelazydog",NormaliseFancyUnicodeToToASCII("𝑇ℎ𝑒𝑓𝑜𝑥𝑗𝑢𝑚𝑝𝑒𝑑𝑜𝑣𝑒𝑟𝑡ℎ𝑒𝑙𝑎𝑧𝑦𝑑𝑜𝑔"))//Italic
-	//assert.Equal(t,"Thefoxjumpedoverthelazydog",NormaliseFancyUnicodeToToASCII("𝘛𝘩𝘦𝘧𝘰𝘹𝘫𝘶𝘮𝘱𝘦𝘥𝘰𝘷𝘦𝘳𝘵𝘩𝘦𝘭𝘢𝘻𝘺𝘥𝘰𝘨"))//Italic
-	//assert.Equal(t,"Thefoxjumpedoverthelazydog",NormaliseFancyUnicodeToToASCII("𝔗𝔥𝔢𝔣𝔬𝔵𝔧𝔲𝔪𝔭𝔢𝔡𝔬𝔳𝔢𝔯𝔱𝔥𝔢𝔩𝔞𝔷𝔶𝔡𝔬𝔤"))//Fraktur--PROBLEMATIC
-	//assert.Equal(t,"Thefoxjumpedoverthelazydog",NormaliseFancyUnicodeToToASCII("ᵀʰᵉᶠᵒˣʲᵘᵐᵖᵉᵈᵒᵛᵉʳᵗʰᵉˡᵃᶻʸᵈᵒᵍ"))//Superscript
-	//assert.Equal(t,"Thefoxjumpedoverthelazydog",NormaliseFancyUnicodeToToASCII("⠞⠓⠑⠋⠕⠭⠚⠥⠍⠏⠑⠙⠕⠧⠑⠗⠞⠓⠑⠇⠁⠵⠽⠙⠕⠛"))
+	assert.Equal(t, "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+		NormaliseFancyUnicodeToASCII("0123456789⓪①②③④⑤⑥⑦⑧⑨⓿❶❷❸❹❺❻❼❽❾０１２３４５６７８９𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿𝟎𝟏𝟐𝟑𝟒𝟓𝟔𝟕𝟖𝟗"))
 }
 
 func TestRemoveEmojis(t *testing.T) {

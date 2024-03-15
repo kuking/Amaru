@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/abadojack/whatlanggo"
 	"github.com/kljensen/snowball"
+	"github.com/rivo/uniseg"
 	"net/url"
 	"regexp"
 	"strings"
@@ -14,184 +15,75 @@ var stopWordsReplacer *strings.Replacer
 
 func init() {
 	patterns = []string{
-		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", // Reference
-		"𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡", // Double-struck
-		"𝔞𝔟𝔠𝔡𝔢𝔣𝔤𝔥𝔦𝔧𝔨𝔩𝔪𝔫𝔬𝔭𝔮𝔯𝔰𝔱𝔲𝔳𝔴𝔵𝔶𝔷𝔄𝔅ℭ𝔇𝔈𝔉𝔊ℌℑ𝔍𝔎𝔏𝔐𝔑𝔒𝔓𝔔ℜ𝔖𝔗𝔘𝔙𝔚𝔛𝔜ℨ0123456789", // Fraktur
-		//"𝖆𝖇𝖈𝖉𝖊𝖋𝖌𝖍𝖎𝖏𝖐𝖑𝖒𝖓𝖔𝖕𝖖𝖗𝖘𝖙𝖚𝖛𝖜𝖝𝖞𝖟 𝕬𝕭𝕮𝕯𝕰𝕱𝕲𝕳𝕴𝕵𝕶𝕷𝕸𝕹𝕺𝕻𝕼𝕽𝕾𝕿𝖀𝖁𝖂𝖃𝖄𝖅 0123456789", // Fraktur Bold
-		//"ᵃᵇᶜᵈᵉᶠᵍʰᶦʲᵏˡᵐⁿᵒᵖᵠʳˢᵗᵘᵛʷˣʸᶻᴬᴮᶜᴰᴱᶠᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᵠᴿˢᵀᵁⱽᵂˣʸᶻ⁰¹²³⁴⁵⁶⁷⁸⁹", // superscript
-		//"ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴩqʀꜱᴛᴜᴠᴡxyᴢᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴩQʀꜱᴛᴜᴠᴡxYᴢ0123456789", // small-capitals
-		//"🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿 🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿", // regionals
-		//"🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉",                                                    // squared
-		//"🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉",                                                    // filled-squared
-		//"⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵ ⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵ ⠚⠁⠃⠉⠙⠑⠋⠛⠓⠊", // Braille
+		"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", // Reference
+		"ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ ⒶⒷⒸⒹⒺⒻⒼⒽⒾⒿⓀⓁⓂⓃⓄⓅⓆⓇⓈⓉⓊⓋⓌⓍⓎⓏ⓪①②③④⑤⑥⑦⑧⑨",
+		"🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩 🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩⓿❶❷❸❹❺❻❼❽❾",
+		"ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ　ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ０１２３４５６７８９",
+		"ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴩqʀꜱᴛᴜᴠᴡxyᴢ ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴩQʀꜱᴛᴜᴠᴡxYᴢ0123456789",
+		"𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇 𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵",
+		"𝙖𝙗𝙘𝙙𝙚𝙛𝙜𝙝𝙞𝙟𝙠𝙡𝙢𝙣𝙤𝙥𝙦𝙧𝙨𝙩𝙪𝙫𝙬𝙭𝙮𝙯 𝘼𝘽𝘾𝘿𝙀𝙁𝙂𝙃𝙄𝙅𝙆𝙇𝙈𝙉𝙊𝙋𝙌𝙍𝙎𝙏𝙐𝙑𝙒𝙓𝙔𝙕0123456789",
+		"𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻 𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡0123456789",
+		"𝑎𝑏𝑐𝑑𝑒𝑓𝑔ℎ𝑖𝑗𝑘𝑙𝑚𝑛𝑜𝑝𝑞𝑟𝑠𝑡𝑢𝑣𝑤𝑥𝑦𝑧 𝐴𝐵𝐶𝐷𝐸𝐹𝐺𝐻𝐼𝐽𝐾𝐿𝑀𝑁𝑂𝑃𝑄𝑅𝑆𝑇𝑈𝑉𝑊𝑋𝑌𝑍0123456789",
+		"𝖺𝖻𝖼𝖽𝖾𝖿𝗀𝗁𝗂𝗃𝗄𝗅𝗆𝗇𝗈𝗉𝗊𝗋𝗌𝗍𝗎𝗏𝗐𝗑𝗒𝗓 𝖠𝖡𝖢𝖣𝖤𝖥𝖦𝖧𝖨𝖩𝖪𝖫𝖬𝖭𝖮𝖯𝖰𝖱𝖲𝖳𝖴𝖵𝖶𝖷𝖸𝖹𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫",
+		"𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫 𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡",
+		"𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣 𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿",
+		"𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳 𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝟎𝟏𝟐𝟑𝟒𝟓𝟔𝟕𝟖𝟗",
+		"𝒂𝒃𝒄𝒅𝒆𝒇𝒈𝒉𝒊𝒋𝒌𝒍𝒎𝒏𝒐𝒑𝒒𝒓𝒔𝒕𝒖𝒗𝒘𝒙𝒚𝒛 𝑨𝑩𝑪𝑫𝑬𝑭𝑮𝑯𝑰𝑱𝑲𝑳𝑴𝑵𝑶𝑷𝑸𝑹𝑺𝑻𝑼𝑽𝑾𝑿𝒀𝒁0123456789",
+		"𝔞𝔟𝔠𝔡𝔢𝔣𝔤𝔥𝔦𝔧𝔨𝔩𝔪𝔫𝔬𝔭𝔮𝔯𝔰𝔱𝔲𝔳𝔴𝔵𝔶𝔷 𝔄𝔅ℭ𝔇𝔈𝔉𝔊ℌℑ𝔍𝔎𝔏𝔐𝔑𝔒𝔓𝔔ℜ𝔖𝔗𝔘𝔙𝔚𝔛𝔜ℨ0123456789",
+		"𝖆𝖇𝖈𝖉𝖊𝖋𝖌𝖍𝖎𝖏𝖐𝖑𝖒𝖓𝖔𝖕𝖖𝖗𝖘𝖙𝖚𝖛𝖜𝖝𝖞𝖟 𝕬𝕭𝕮𝕯𝕰𝕱𝕲𝕳𝕴𝕵𝕶𝕷𝕸𝕹𝕺𝕻𝕼𝕽𝕾𝕿𝖀𝖁𝖂𝖃𝖄𝖅0123456789",
+		"⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵ ⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵⠚⠁⠃⠉⠙⠑⠋⠛⠓⠊",
+		"ᵃᵇᶜᵈᵉᶠᵍʰᶦʲᵏˡᵐⁿᵒᵖᵠʳˢᵗᵘᵛʷˣʸᶻ ᴬᴮᶜᴰᴱᶠᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᵠᴿˢᵀᵁⱽᵂˣʸᶻ⁰¹²³⁴⁵⁶⁷⁸⁹",
+		"𝒶𝒷𝒸𝒹𝑒𝒻𝑔𝒽𝒾𝒿𝓀𝓁𝓂𝓃𝑜𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏 𝒜𝐵𝒞𝒟𝐸𝐹𝒢𝐻𝐼𝒥𝒦𝐿𝑀𝒩𝒪𝒫𝒬𝑅𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫",
+		"𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃 𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩0123456789",
+		"🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉 🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣",
+		"🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉 🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣",
+		"a⃣b⃣c⃣d⃣e⃣f⃣g⃣h⃣i⃣j⃣k⃣l⃣m⃣n⃣o⃣p⃣q⃣r⃣s⃣t⃣u⃣v⃣w⃣x⃣y⃣z⃣ ⃣A⃣B⃣C⃣D⃣E⃣F⃣G⃣H⃣I⃣J⃣K⃣L⃣M⃣N⃣O⃣P⃣Q⃣R⃣S⃣T⃣U⃣V⃣W⃣X⃣Y⃣Z⃣0⃣1⃣2⃣3⃣4⃣5⃣6⃣7⃣8⃣9⃣",
 	}
 
 	var replacements []string
-	for _, r := range ".,:;[]{}()|!?''\"\\/=><+-_*~@£$%^&#…⋆" {
+	for _, r := range ".,:;[]{}()|!?`''\"\\/=><+-_*~@£$€%^&#…︙＊⋆˘ʕ⊙ᴥ⊙ʔⁱᴗ͈ˬᴗ͈ʚɞ⊹" {
 		replacements = append(replacements, string(r), " ")
 	}
 	stopWordsReplacer = strings.NewReplacer(replacements...)
 }
 
-func NormaliseFancyUnicodeToToASCII(input string) string {
+func NormaliseFancyUnicodeToASCII(input string) string {
 	var result strings.Builder
-	for _, char := range input {
-		var base rune
-		var reloc rune
-		switch {
-		case '𝐀' <= char && char <= '𝐙': // Bold
-			base = '𝐀'
-			reloc = 'A'
-		case '𝐚' <= char && char <= '𝐳':
-			base = '𝐚'
-			reloc = 'a'
-		case '𝐴' <= char && char <= '𝑍': // Italic
-			base = '𝐴'
-			reloc = 'A'
-		case '𝑎' <= char && char <= '𝑧':
-			base = '𝑎'
-			reloc = 'a'
-		// Handle bold-italic
-		case '𝑨' <= char && char <= '𝒁': // Bold Italic
-			base = '𝑨'
-			reloc = 'A'
-		case '𝒂' <= char && char <= '𝒛':
-			base = '𝒂'
-			reloc = 'a'
-		case '𝖠' <= char && char <= '𝖹': // Sans-serif
-			base = '𝖠'
-			reloc = 'A'
-		case '𝖺' <= char && char <= '𝗓':
-			base = '𝖺'
-			reloc = 'a'
-		case '𝗔' <= char && char <= '𝗭': // Sans-serif bold
-			base = '𝗔'
-			reloc = 'A'
-		case '𝗮' <= char && char <= '𝘇':
-			base = '𝗮'
-			reloc = 'a'
-		case '𝘼' <= char && char <= '𝙕': // Sans-serif bold italic
-			base = '𝘼'
-			reloc = 'A'
-		case '𝙖' <= char && char <= '𝙯':
-			base = '𝙖'
-			reloc = 'a'
-		case '𝘈' <= char && char <= '𝘡': // Sans-serif italic
-			base = '𝘈'
-			reloc = 'A'
-		case '𝘢' <= char && char <= '𝘻':
-			base = '𝘢'
-			reloc = 'a'
-		// Monospace uppercase
-		case '𝙰' <= char && char <= '𝚉':
-			base = '𝙰'
-			reloc = 'A'
-		// Monospace lowercase
-		case '𝚊' <= char && char <= '𝚣':
-			base = '𝚊'
-			reloc = 'a'
-		// Script cursive
-		case '𝒶' <= char && char <= '𝓏':
-			base = '𝒶'
-			reloc = 'a'
-		case '𝒜' <= char && char <= '𝒵':
-			base = '𝒜'
-			reloc = 'A'
-		// Script cursive bold
-		case '𝓪' <= char && char <= '𝔃':
-			base = '𝓪'
-			reloc = 'a'
-		case '𝓐' <= char && char <= '𝓩':
-			base = '𝓐'
-			reloc = 'A'
-		//Monospace Normal ????
-		case 'a' <= char && char <= 'z':
-			base = 'a'
-			reloc = 'a'
-		// circle
-		case 'ⓐ' <= char && char <= 'ⓩ':
-			base = 'ⓐ'
-			reloc = 'a'
-		case 'Ⓐ' <= char && char <= 'Ⓩ':
-			base = 'Ⓐ'
-			reloc = 'A'
-		// filled circle
-		case '🅐' <= char && char <= '🅩':
-			base = '🅐'
-			reloc = 'a'
-		// double struck
-		//case '𝕒' <= char && char <= '𝕫':
-		//	base = '𝕒'
-		//	reloc = 'a'
-		//case '𝔸' <= char && char <= 'ℤ':
-		//	base = '𝔸'
-		//	reloc = 'A'
-		// full-width
-		case 'ａ' <= char && char <= 'ｚ':
-			base = 'ａ'
-			reloc = 'a'
-		case 'Ａ' <= char && char <= 'Ｚ':
-			base = 'Ａ'
-			reloc = 'A'
-		case '　' == char:
-			base = '　'
-			reloc = ' '
-		// Mathematical block numbers bold
-		case '𝟬' <= char && char <= '𝟵':
-			base = '𝟬'
-			reloc = '0'
-		// Mathematical block numbers
-		case '𝟶' <= char && char <= '𝟿':
-			base = '𝟶'
-			reloc = '0'
-		// Mathematical double barred numbers
-		case '𝟘' <= char && char <= '𝟡':
-			base = '𝟘'
-			reloc = '0'
-
-			// Fraktur
-		//case '𝔞' <= char && char <= '𝔷':
-		//	base = '𝔞'
-		//	reloc = 'a'
-		//case '𝔄' <= char && char <= 'ℨ':
-		//	base = '𝔄'
-		//	reloc = 'A'
-
-		default:
-			base = 0
-		}
-
-		if base != 0 {
-			offset := char - base
-			result.WriteRune(reloc + offset)
-		} else {
-			done := false
-			for n := 1; n < len(patterns); n++ {
-				for idx, rv := range patterns[n] {
-					if rv == char {
-						result.WriteRune(getNthRune(patterns[0], idx))
-						done = true
-						break
-					}
-				}
-				if done {
+	gin := uniseg.NewGraphemes(input)
+	for gin.Next() {
+		done := false
+		for p := 0; p < len(patterns); p++ {
+			pin := uniseg.NewGraphemes(patterns[p])
+			n := 0
+			for pin.Next() {
+				if gin.Str() == pin.Str() {
+					result.WriteString(getNthGraphene(patterns[0], n))
+					done = true
 					break
 				}
+				n++
 			}
-
-			result.WriteRune(char) // Non-alphabetic characters are left as-is
+			if done {
+				break
+			}
+		}
+		if !done {
+			result.WriteString(gin.Str())
 		}
 	}
 	return result.String()
 }
 
-func getNthRune(s string, n int) rune {
-	for i, r := range s {
-		if i == n {
-			return r
+func getNthGraphene(s string, n int) string {
+	g := uniseg.NewGraphemes(s)
+	c := 0
+	for g.Next() {
+		if c == n {
+			return g.Str()
 		}
+		c++
 	}
-	return '?'
+	return ""
 }
 
 func RemoveEmojis(str string) string {
