@@ -1,11 +1,16 @@
 package text
 
 import (
+	"fmt"
+	"github.com/abadojack/whatlanggo"
+	"github.com/kljensen/snowball"
+	"net/url"
 	"regexp"
 	"strings"
 )
 
 var patterns []string
+var stopWordsReplacer *strings.Replacer
 
 func init() {
 	patterns = []string{
@@ -19,8 +24,13 @@ func init() {
 		//"🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉",                                                    // squared
 		//"🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉",                                                    // filled-squared
 		//"⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵ ⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵ ⠚⠁⠃⠉⠙⠑⠋⠛⠓⠊", // Braille
-
 	}
+
+	var replacements []string
+	for _, r := range ".,:;[]{}()|!?''\"\\/=><+-_*~@£$%^&#…⋆" {
+		replacements = append(replacements, string(r), " ")
+	}
+	stopWordsReplacer = strings.NewReplacer(replacements...)
 }
 
 func NormaliseFancyUnicodeToToASCII(input string) string {
@@ -65,6 +75,12 @@ func NormaliseFancyUnicodeToToASCII(input string) string {
 			reloc = 'A'
 		case '𝙖' <= char && char <= '𝙯':
 			base = '𝙖'
+			reloc = 'a'
+		case '𝘈' <= char && char <= '𝘡': // Sans-serif italic
+			base = '𝘈'
+			reloc = 'A'
+		case '𝘢' <= char && char <= '𝘻':
+			base = '𝘢'
 			reloc = 'a'
 		// Monospace uppercase
 		case '𝙰' <= char && char <= '𝚉':
@@ -213,26 +229,51 @@ func RemoveEmojis(str string) string {
 }
 
 func ReplaceStopWords(str string) string {
-	replacer := strings.NewReplacer(
-		".", " ",
-		",", " ",
-		":", " ",
-		";", " ",
-		"(", " ",
-		")", " ",
-		"!", " ",
-		"?", " ",
-		"'", " ", "'", " ",
-		"\"", " ", "/", " ",
-		"“", " ", "”", " ",
-		"-", " ",
-		"[", " ",
-		"]", " ",
-		"~", " ",
-		"@", " ",
-		"#", " ",
-		"=", " ",
-		"…", " ",
-	)
-	return replacer.Replace(str)
+	return stopWordsReplacer.Replace(str)
+}
+
+func Stems(text string) []string {
+	var res []string
+
+	var lang string
+	info := whatlanggo.Detect(text)
+	switch info.Lang.Iso6391() {
+	case "es":
+		lang = "spanish"
+	case "fr":
+		lang = "french"
+	case "hu":
+		lang = "hungarian"
+	case "ro":
+		lang = "spanish" // rumanian as spanish
+	case "ru":
+		lang = "russian"
+	case "sv":
+		lang = "swedish"
+	default:
+		lang = "english"
+	}
+	if !info.IsReliable() {
+		lang = "english"
+	}
+
+	for _, word := range strings.Fields(text) {
+		if IsURL(word) {
+			continue
+		}
+		if len(word) == 0 {
+			continue
+		}
+		if stemmed, err := snowball.Stem(word, lang, true); err == nil {
+			res = append(res, stemmed)
+		} else {
+			fmt.Print(err)
+		}
+	}
+	return res
+}
+
+func IsURL(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
 }
