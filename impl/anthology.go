@@ -19,18 +19,16 @@ type anthologyImpl struct {
 	defaultIndexSizeTks     int64
 }
 
-func (a *anthologyImpl) Dossier(tid Amaru.TokenID) *[]Amaru.DocID {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (a *anthologyImpl) Add(did Amaru.DocID, tid Amaru.TokenID) {
 	offset := a.tidOffset(tid)
+	var dossier Amaru.Dossier
 	if offset == uint64(0xffff_ffff_ffff_ffff) {
-		offset = a.newDossier(tid, a.defaultDossierCapacity)
+		dossier = a.newDossier(tid, a.defaultDossierCapacity)
+	} else {
+		dossier = a.GetDossier(tid)
 	}
 
-	if !a.dossierAddDocID(offset, did) {
+	if _, err := dossier.Add(did); err != nil {
 		panic("could not add the did into this tid ...have you run out of initial space?")
 	}
 }
@@ -123,6 +121,13 @@ func (a *anthologyImpl) Clear() {
 func (a *anthologyImpl) Create() error {
 	a.Clear()
 	return nil
+}
+
+func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID) []Amaru.DocID {
+	//var res []Amaru.DocID
+	//
+	//a.Dossier()
+	panic("pending")
 }
 
 func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, error) {

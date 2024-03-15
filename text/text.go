@@ -1,4 +1,4 @@
-package util
+package text
 
 import (
 	"regexp"
@@ -210,4 +210,29 @@ func RemoveEmojis(str string) string {
 
 	emojiRx := regexp.MustCompile(regex)
 	return emojiRx.ReplaceAllString(str, "")
+}
+
+func ReplaceStopWords(str string) string {
+	replacer := strings.NewReplacer(
+		".", " ",
+		",", " ",
+		":", " ",
+		";", " ",
+		"(", " ",
+		")", " ",
+		"!", " ",
+		"?", " ",
+		"'", " ", "'", " ",
+		"\"", " ", "/", " ",
+		"“", " ", "”", " ",
+		"-", " ",
+		"[", " ",
+		"]", " ",
+		"~", " ",
+		"@", " ",
+		"#", " ",
+		"=", " ",
+		"…", " ",
+	)
+	return replacer.Replace(str)
 }

@@ -59,7 +59,7 @@ type Documents interface {
 }
 
 type Anthology interface {
-	Dossier(tid TokenID) *[]DocID // Readonly
+	GetDossier(tid TokenID) Dossier // Readonly
 	Add(did DocID, tid TokenID)
 	Compact() error
 	Load() error
@@ -68,4 +68,20 @@ type Anthology interface {
 	Clear()
 	Close() error
 	Create() error
+	FindDocIDsWith(tids []TokenID) []DocID
+}
+
+type Dossier interface {
+	Offset() uint64
+	TokenID() TokenID
+	Capacity() uint32
+	Count() uint32
+	Get(n uint32) DocID
+	Set(n uint32, did DocID)
+	Add(did DocID) (newCap uint32, err error)
+	Sort()
+	// Data Interface
+	Len() int
+	Less(i, j int) bool
+	Swap(i, j int)
 }
