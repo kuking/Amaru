@@ -102,7 +102,7 @@ func (d *documentsImpl) Save() error {
 	if !d.writable {
 		return errors.New("not writable")
 	}
-	file, err := os.Create(d.path)
+	file, err := os.OpenFile(d.path, newFileFlags, newFilePerms)
 	if err != nil {
 		return err
 	}

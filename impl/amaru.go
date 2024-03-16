@@ -3,7 +3,13 @@ package impl
 import (
 	"errors"
 	Amaru "github.com/kukino/Amaru"
+	"os"
 	"path"
+)
+
+const (
+	newFileFlags int         = os.O_RDWR | os.O_CREATE
+	newFilePerms os.FileMode = 0644
 )
 
 type amaruImpl struct {

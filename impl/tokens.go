@@ -116,7 +116,7 @@ func (t *tokensImpl) Save() error {
 	if !t.writable {
 		return errors.New("not writable")
 	}
-	file, err := os.Create(t.path)
+	file, err := os.OpenFile(t.path, newFileFlags, newFilePerms)
 	if err != nil {
 		return err
 	}

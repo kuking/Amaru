@@ -33,14 +33,9 @@ func (a *anthologyImpl) Add(did Amaru.DocID, tid Amaru.TokenID) {
 	}
 }
 
-func (a *anthologyImpl) Compact() error {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (a *anthologyImpl) Load() error {
 	var err error
-	a.aFile, err = os.OpenFile(a.aPath, os.O_RDWR|os.O_CREATE, 0755)
+	a.aFile, err = os.OpenFile(a.aPath, newFileFlags, newFilePerms)
 	if err != nil {
 		return err
 	}
@@ -56,7 +51,7 @@ func (a *anthologyImpl) Load() error {
 		return err
 	}
 
-	a.iFile, err = os.OpenFile(a.iPath, os.O_RDWR|os.O_CREATE, 0755)
+	a.iFile, err = os.OpenFile(a.iPath, newFileFlags, newFilePerms)
 	if err != nil {
 		return err
 	}
@@ -179,6 +174,12 @@ func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID) []Amaru.DocID {
 	}
 
 	return docids
+}
+
+func (a *anthologyImpl) Compact() error {
+
+	//TODO implement me
+	panic("implement me")
 }
 
 func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, error) {
