@@ -18,9 +18,9 @@ func TestNormaliseFancyUnicodeToToASCII(t *testing.T) {
 	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝙏𝙝𝙚 𝙛𝙤𝙭 𝙟𝙪𝙢𝙥𝙚𝙙 𝙤𝙫𝙚𝙧 𝙩𝙝𝙚 𝙡𝙖𝙯𝙮 𝙙𝙤𝙜")) //ItalicBoldSans-serif
 	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝘛𝘩𝘦 𝘧𝘰𝘹 𝘫𝘶𝘮𝘱𝘦𝘥 𝘰𝘷𝘦𝘳 𝘵𝘩𝘦 𝘭𝘢𝘻𝘺 𝘥𝘰𝘨")) //ItalicBoldSans-serif
 	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("Ⓣⓗⓔ ⓕⓞⓧ ⓙⓤⓜⓟⓔⓓ ⓞⓥⓔⓡ ⓣⓗⓔ ⓛⓐⓩⓨ ⓓⓞⓖ")) //Circled
-	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("🅣🅗🅔 🅕🅞🅧 🅙🅤🅜🅟🅔🅓 🅞🅥🅔🅡 🅣🅗🅔 🅛🅐🅩🅨 🅓🅞🅖")) //FilledCircled
-	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("🆃🅷🅴 🅵🅾🆇 🅹🆄🅼🅿🅴🅳 🅾🆅🅴🆁 🆃🅷🅴 🅻🅰🆉🆈 🅳🅾🅶")) //FilledCircled
-	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("🅃🄷🄴 🄵🄾🅇 🄹🅄🄼🄿🄴🄳 🄾🅅🄴🅁 🅃🄷🄴 🄻🄰🅉🅈 🄳🄾🄶"))
+	assert.Equal(t, "THE FOX JUMPED OVER THE LAZY DOG", NormaliseFancyUnicodeToASCII("🅣🅗🅔 🅕🅞🅧 🅙🅤🅜🅟🅔🅓 🅞🅥🅔🅡 🅣🅗🅔 🅛🅐🅩🅨 🅓🅞🅖")) //FilledCircled
+	assert.Equal(t, "THE FOX JUMPED OVER THE LAZY DOG", NormaliseFancyUnicodeToASCII("🆃🅷🅴 🅵🅾🆇 🅹🆄🅼🅿🅴🅳 🅾🆅🅴🆁 🆃🅷🅴 🅻🅰🆉🆈 🅳🅾🅶")) //FilledCircled
+	assert.Equal(t, "THE FOX JUMPED OVER THE LAZY DOG", NormaliseFancyUnicodeToASCII("🅃🄷🄴 🄵🄾🅇 🄹🅄🄼🄿🄴🄳 🄾🅅🄴🅁 🅃🄷🄴 🄻🄰🅉🅈 🄳🄾🄶"))
 	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝚃𝚑𝚎 𝚏𝚘𝚡 𝚓𝚞𝚖𝚙𝚎𝚍 𝚘𝚟𝚎𝚛 𝚝𝚑𝚎 𝚕𝚊𝚣𝚢 𝚍𝚘𝚐")) //Monospace
 	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("Ｔｈｅ　ｆｏｘ　ｊｕｍｐｅｄ　ｏｖｅｒ　ｔｈｅ　ｌａｚｙ　ｄｏｇ")) //full-width
 	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("ᴛʜᴇ ꜰᴏx ᴊᴜᴍᴩᴇᴅ ᴏᴠᴇʀ ᴛʜᴇ ʟᴀᴢy ᴅᴏɢ"))
