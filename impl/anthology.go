@@ -124,17 +124,68 @@ func (a *anthologyImpl) Create() error {
 }
 
 func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID) []Amaru.DocID {
-	//var res []Amaru.DocID
-	//
-	//a.Dossier()
-	panic("pending")
+
+	var docids []Amaru.DocID
+	var dossiers []Amaru.Dossier
+	var position []uint32
+	for _, tid := range tids {
+		dossiers = append(dossiers, a.GetDossier(tid))
+		position = append(position, 0)
+	}
+
+	if len(tids) == 0 {
+		return docids
+	}
+
+	finished := false
+	for {
+		// checks if the end of a dossier has been reach
+		for i := 0; i < len(dossiers); i++ {
+			if dossiers[i].Count() == position[i] {
+				finished = true
+				break
+			}
+		}
+		if finished {
+			break
+		}
+
+		// checks if the current index is the same for all dossiers => match
+		found := true
+		did := dossiers[0].Get(position[0])
+		for i := 1; i < len(dossiers); i++ {
+			if did != dossiers[i].Get(position[i]) {
+				found = false
+			}
+			if !found {
+				break
+			}
+		}
+		if found {
+			docids = append(docids, did)
+		}
+
+		// increases the dossier with the smallest number
+		smallestTid := Amaru.InvalidDocID // highest possible token id
+		smallestPos := -1
+		for i := 0; i < len(dossiers); i++ {
+			if dossiers[i].Get(position[i]) < smallestTid {
+				smallestPos = i
+				smallestTid = dossiers[i].Get(position[i])
+			}
+		}
+		position[smallestPos]++
+
+	}
+
+	return docids
 }
 
 func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, error) {
 	anthology := anthologyImpl{
 		aPath:                   anthologyBasePath,
 		iPath:                   anthologyBasePath + ".idx",
-		defaultDossierCapacity:  50_000,
+		defaultDossierCapacity:  100_000,
 		defaultAnthologySizeMiB: 100_000,
 		defaultIndexSizeTks:     100_000,
 	}

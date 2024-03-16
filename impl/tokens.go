@@ -33,14 +33,25 @@ func (t *tokensImpl) GetId(tokenType Amaru.TokenType, text string) Amaru.TokenID
 	return Amaru.InvalidTokenID
 }
 
+func (t *tokensImpl) GetIds(tokenType Amaru.TokenType, texts []string) []Amaru.TokenID {
+	var res []Amaru.TokenID
+	for _, text := range texts {
+		tid := t.GetId(tokenType, text)
+		if tid != Amaru.InvalidTokenID {
+			res = append(res, tid)
+		}
+	}
+	return res
+}
+
 func (t *tokensImpl) Count() int {
 	return len(t.tokens)
 }
 
 func (t *tokensImpl) Add(tokenType Amaru.TokenType, text string) (Amaru.TokenID, string) {
-	if !t.writable {
-		return Amaru.InvalidTokenID, text
-	}
+	//if !t.writable { // this function is also used for loading ... needs fixing
+	//	return Amaru.InvalidTokenID, text
+	//}
 	text = sanitiseTokenText(text)
 
 	tid := t.GetId(tokenType, text)

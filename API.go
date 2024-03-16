@@ -33,6 +33,7 @@ type Token struct {
 type Tokens interface {
 	Get(tid TokenID) *Token
 	GetId(tokenType TokenType, text string) TokenID
+	GetIds(tokenType TokenType, texts []string) []TokenID
 	Count() int
 	Add(tokenType TokenType, text string) (TokenID, string)
 	Load() error
@@ -43,12 +44,14 @@ type Tokens interface {
 }
 
 type Document struct {
+	Did     DocID
 	URL     string
 	Ranking float32
 }
 
 type Documents interface {
 	Get(did DocID) *Document
+	GetAll(docids []DocID) []*Document
 	Count() int
 	Add(url string, ranking float32) DocID
 	Load() error

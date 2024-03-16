@@ -35,6 +35,14 @@ func (d *documentsImpl) Get(did Amaru.DocID) *Amaru.Document {
 	return &d.documents[int(did)]
 }
 
+func (d *documentsImpl) GetAll(docids []Amaru.DocID) []*Amaru.Document {
+	var res []*Amaru.Document
+	for _, did := range docids {
+		res = append(res, d.Get(did))
+	}
+	return res
+}
+
 func (d *documentsImpl) Count() int {
 	return len(d.documents)
 }
@@ -62,6 +70,7 @@ func (d *documentsImpl) Load() error {
 	}
 	defer file.Close()
 
+	did := Amaru.DocID(0)
 	d.Clear()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -77,9 +86,11 @@ func (d *documentsImpl) Load() error {
 		}
 
 		d.documents = append(d.documents, Amaru.Document{
+			Did:     did,
 			URL:     parts[1],
 			Ranking: float32(ranking),
 		})
+		did++
 	}
 	if err := scanner.Err(); err != nil {
 		return err

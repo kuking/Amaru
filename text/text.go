@@ -54,7 +54,7 @@ func init() {
 	}
 
 	var replacements []string
-	for _, r := range ".,:;[]{}()|!?`''\"\\/=><+-_*~@£$€%^&#…︙＊⋆˘ʕ⊙ᴥ⊙ʔⁱᴗ͈ˬᴗ͈ʚɞ⊹" {
+	for _, r := range ".,:;[]{}()|!?`''\"\\/=><+-_*~@£$€%^&#…︙：＊⋆｡･═，˘ʕ⊙ᴥ⊙ʔⁱᴗ͈ˬᴗ͈ʚɞ⊹" {
 		replacements = append(replacements, string(r), " ")
 	}
 	stopWordsReplacer = strings.NewReplacer(replacements...)
