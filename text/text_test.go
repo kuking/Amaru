@@ -29,6 +29,7 @@ func TestNormaliseFancyUnicodeToToASCII(t *testing.T) {
 	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("𝕿𝖍𝖊 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖊𝖉 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌"))
 	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("⠞⠓⠑ ⠋⠕⠭ ⠚⠥⠍⠏⠑⠙ ⠕⠧⠑⠗ ⠞⠓⠑ ⠇⠁⠵⠽ ⠙⠕⠛"))
 	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("ᵀʰᵉ ᶠᵒˣ ʲᵘᵐᵖᵉᵈ ᵒᵛᵉʳ ᵗʰᵉ ˡᵃᶻʸ ᵈᵒᵍ"))
+	assert.Equal(t, "the fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("ₜₕₑ 𝒻ₒₓ ⱼᵤₘₚₑ𝒹 ₒᵥₑᵣ ₜₕₑ ₗₐ𝓏ᵧ 𝒹ₒ𝓰"))
 	assert.Equal(t, "The fox jumped over the lazy dog", NormaliseFancyUnicodeToASCII("T⃣h⃣e⃣ ⃣f⃣o⃣x⃣ ⃣j⃣u⃣m⃣p⃣e⃣d⃣ ⃣o⃣v⃣e⃣r⃣ ⃣t⃣h⃣e⃣ ⃣l⃣a⃣z⃣y⃣ ⃣d⃣o⃣g⃣"))
 
 	assert.Equal(t, "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
