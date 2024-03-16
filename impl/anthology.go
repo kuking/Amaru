@@ -120,7 +120,7 @@ func (a *anthologyImpl) Create() error {
 	return nil
 }
 
-func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID) []Amaru.DocID {
+func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID, limit int) []Amaru.DocID {
 
 	var docids []Amaru.DocID
 	var dossiers []Amaru.Dossier
@@ -175,6 +175,9 @@ func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID) []Amaru.DocID {
 		// If all DIDs match at current positions, add to result.
 		if match {
 			docids = append(docids, did)
+			if len(docids) > limit {
+				return docids
+			}
 		}
 
 		// Increment position in dossier with smallest DID to move forward.

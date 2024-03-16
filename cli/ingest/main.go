@@ -15,6 +15,10 @@ import (
 	"time"
 )
 
+// TODO: Ingest Documents sorted by descending ranking, so the intersection can be stopped at X results, and they will be the top ones.
+// did=1 is the highest document existing, did=2 is the second, and so fort ... therefore the intersection can stop as soon as it finds X elements
+// and they will be the top elements.
+
 type JSON map[string]interface{}
 type Document struct {
 	Json JSON

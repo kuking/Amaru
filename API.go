@@ -72,7 +72,7 @@ type Anthology interface {
 	Clear()
 	Close() error
 	Create() error
-	FindDocIDsWith(tids []TokenID) []DocID
+	FindDocIDsWith(tids []TokenID, limit int) []DocID
 }
 
 type Dossier interface {

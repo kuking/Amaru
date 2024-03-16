@@ -15,17 +15,7 @@ import (
 )
 
 func main() {
-	basePath, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-	amaru, err := impl.NewAmaru(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/idx1/"), false)
-	if err != nil {
-		panic(err)
-	}
-	if err := amaru.Load(); err != nil {
-		panic(err)
-	}
+	amaru := openAmaru()
 
 	fmt.Printf("Index: %s\n", amaru.Path())
 	fmt.Printf("Stats:\n")
@@ -63,13 +53,15 @@ func main() {
 		} else {
 			t0 := time.Now()
 			tids := amaru.Tokens().GetIds(Amaru.TextToken, text.Stems(cmd))
-			docids := amaru.Anthology().FindDocIDsWith(tids)
+			docids := amaru.Anthology().FindDocIDsWith(tids, 1000)
+			t1 := time.Now()
 			docs := amaru.Documents().GetAll(docids)
 			sort.Slice(docs, func(i, j int) bool {
 				return docs[i].Ranking > docs[j].Ranking
 			})
+			elapsedSets := t1.Sub(t0)
 			elapsed := time.Since(t0)
-			log.Printf("Search took %v for %d results\n", elapsed, len(docs))
+			log.Printf("Search took %v for %d results (%v for intersection) \n", elapsed, len(docs), elapsedSets)
 
 			for n, doc := range docs {
 				fmt.Printf("%v\t", doc.URL)
@@ -81,6 +73,21 @@ func main() {
 		}
 
 	}
+}
+
+func openAmaru() Amaru.Amaru {
+	basePath, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	amaru, err := impl.NewAmaru(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/idx1/"), false)
+	if err != nil {
+		panic(err)
+	}
+	if err := amaru.Load(); err != nil {
+		panic(err)
+	}
+	return amaru
 }
 
 func readLine(reader *bufio.Reader) string {
