@@ -97,7 +97,7 @@ func (d *dossierImpl) Swap(i, j int) {
 
 // newDossier creates a new record at the end of the aMMap.
 func (a *anthologyImpl) newDossier(tid Amaru.TokenID, capacity uint32) Amaru.Dossier {
-	var offset uint64 = 0
+	var offset uint64 = a.lastKnownEoF
 
 	// Scan all records to find the end of the file
 	for offset < uint64(len(a.aMMap)) {
@@ -116,6 +116,7 @@ func (a *anthologyImpl) newDossier(tid Amaru.TokenID, capacity uint32) Amaru.Dos
 	}
 
 	a.setTidOffset(tid, offset)
+	a.lastKnownEoF = offset
 
 	binary.BigEndian.PutUint32(a.aMMap[offset:], uint32(tid))
 	binary.BigEndian.PutUint32(a.aMMap[offset+Dossier_CapacityOfs:], capacity)

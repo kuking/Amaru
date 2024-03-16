@@ -14,6 +14,7 @@ type anthologyImpl struct {
 	iFile *os.File
 	iMMap mmap.MMap
 
+	lastKnownEoF            uint64
 	defaultDossierCapacity  uint32
 	defaultAnthologySizeMiB int64
 	defaultIndexSizeTks     int64
@@ -180,9 +181,10 @@ func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, err
 	anthology := anthologyImpl{
 		aPath:                   anthologyBasePath,
 		iPath:                   anthologyBasePath + ".idx",
-		defaultDossierCapacity:  100_000,
-		defaultAnthologySizeMiB: 100_000,
-		defaultIndexSizeTks:     100_000,
+		lastKnownEoF:            0,
+		defaultDossierCapacity:  2_000_000,  // 2M Docs
+		defaultAnthologySizeMiB: 10_000_000, // 10TB
+		defaultIndexSizeTks:     2_000_000,  // 2M Tokens
 	}
 	return &anthology, nil
 }

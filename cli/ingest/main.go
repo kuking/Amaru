@@ -11,16 +11,24 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
+	"sync"
+	"time"
 )
 
 type JSON map[string]interface{}
-type Record struct {
-	Path string
+type Document struct {
 	Json JSON
 }
 
-func main() {
-	println("Indexing ...")
+type StemmedDoc struct {
+	Url     string
+	Ranking float32
+	Stems   []string
+}
+
+func ingest() {
+	t0 := time.Now()
+	log.Println("Indexing ...")
 
 	basePath, err := os.UserHomeDir()
 	if err != nil {
@@ -39,36 +47,25 @@ func main() {
 	docs := amaru.Documents()
 	anth := amaru.Anthology()
 
-	feed := make(chan Record)
-	go readJsons(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/dataset/profiles/"), feed)
+	docsChan := make(chan Document, 100)
+	go readJsons(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/dataset/profiles/"), docsChan)
+	stemsChan := make(chan StemmedDoc, 100)
+	var wg sync.WaitGroup
+	for th := 0; th < 100; th++ { // 100 threads stemming, etc.
+		wg.Add(1)
+		go stemDocuments(docsChan, stemsChan, &wg)
+	}
+	go func() {
+		wg.Wait()
+		close(stemsChan)
+	}()
 
 	c := 0
-	for jsonData := range feed {
+	for stem := range stemsChan {
 
-		//fmt.Println("-----")
-		//fmt.Println(jsonData.Path)
-
-		handle := jsonData.Json["handle"].(string)
-		description := jsonData.Json["desc.txt"].(string)
-		likes := jsonData.Json["likes"].(float64)
-		location := ""
-		if jsonData.Json["loc"] != nil {
-			location = jsonData.Json["loc"].(string)
-		}
-
-		did := docs.Add(fmt.Sprintf("pof://%s", handle), float32(likes))
-
-		doc := description + " " + location + " " + handle
-		doc = text.RemoveBOM(doc)
-		doc = text.RemoveEmojis(doc)
-		doc = text.NormaliseFancyUnicodeToASCII(doc)
-		doc = text.ReplaceStopWords(doc)
-
-		stems := map[string]Amaru.TokenID{} // for displaying only
 		var tids []Amaru.TokenID
-		for _, stem := range text.Stems(doc) {
-			tid, stemmed := tokens.Add(Amaru.TextToken, stem)
-			stems[stemmed] = tid // for displaying only
+		for _, oneStem := range stem.Stems {
+			tid, _ := tokens.Add(Amaru.TextToken, oneStem)
 			tids = append(tids, tid)
 		}
 
@@ -77,55 +74,55 @@ func main() {
 			return tids[i] < tids[j]
 		})
 
+		did := docs.Add(stem.Url, stem.Ranking)
 		for _, tid := range tids {
 			anth.Add(did, tid)
 		}
 
-		if c%1000 == 0 {
-			fmt.Printf("D%d\t", did)
-			for token, tid := range stems {
-				fmt.Printf("%d:%s\t", tid, token)
-			}
-			fmt.Println(len(stems))
+		if c%10_000 == 0 && c > 0 {
+			elapsed := time.Since(t0)
+			log.Printf("%d documents ingested; thoughput is %.2f docs/s\n", did, float64(c)/elapsed.Seconds())
 		}
 
 		c++
-		if c%10000 == 0 {
+		if c%5_000_000_000 == 0 { // never, really
 			println(c, "...")
 			if err := amaru.Save(); err != nil {
 				panic(err)
 			}
 			println("saved")
 		}
-		if c > 10_000 {
+		if c > 2_000_000 {
 			break
 		}
 	}
 
-	println("Sorting all Dossiers, not really necessary but ... ")
-	println("Dossiers (one per Token):", tokens.Count())
+	log.Println("Sorting all Dossiers, not really necessary but ... ")
+	log.Println("Dossiers (one per Token):", tokens.Count())
 	for t := 0; t < tokens.Count(); t++ {
 		anth.GetDossier(Amaru.TokenID(t)).Sort()
 		if t%1000 == 0 {
 			print(".")
 			_ = os.Stdout.Sync()
 		}
+		println()
 	}
-	println()
 
-	println("Compacting anthology ...")
+	log.Println("Compacting anthology ...")
 	if err = anth.Compact(); err != nil {
 		log.Fatal(err)
 	}
-	println("done")
+	log.Println("done")
 
 	if err := amaru.Save(); err != nil {
 		panic(err)
 	}
 
+	elapsed := time.Since(t0)
+	log.Printf("Total time was %v throughput was %.2f docs/s", elapsed.Truncate(time.Millisecond), float64(c)/elapsed.Seconds())
 }
 
-func readJsons(basePath string, ch chan Record) {
+func readJsons(basePath string, ch chan Document) {
 	defer close(ch)
 
 	err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
@@ -144,7 +141,7 @@ func readJsons(basePath string, ch chan Record) {
 				return err
 			}
 
-			ch <- Record{Path: path, Json: jsonData}
+			ch <- Document{Json: jsonData}
 		}
 
 		return nil
@@ -153,4 +150,35 @@ func readJsons(basePath string, ch chan Record) {
 	if err != nil {
 		fmt.Println("Error walking through files:", err)
 	}
+}
+
+func stemDocuments(docsChan chan Document, stemChan chan StemmedDoc, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for doc := range docsChan {
+
+		handle := doc.Json["handle"].(string)
+		description := doc.Json["desc.txt"].(string)
+		likes := doc.Json["likes"].(float64)
+		location := ""
+		if doc.Json["loc"] != nil {
+			location = doc.Json["loc"].(string)
+		}
+
+		doc := description + " " + location + " " + handle
+		doc = text.RemoveBOM(doc)
+		doc = text.RemoveEmojis(doc)
+		doc = text.NormaliseFancyUnicodeToASCII(doc)
+		doc = text.ReplaceStopWords(doc)
+
+		sd := StemmedDoc{
+			Url:     fmt.Sprintf("pof://%s", handle),
+			Ranking: float32(likes),
+			Stems:   text.Stems(doc),
+		}
+		stemChan <- sd
+	}
+}
+
+func main() {
+	ingest()
 }
