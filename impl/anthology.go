@@ -4,6 +4,7 @@ import (
 	"github.com/edsrzf/mmap-go"
 	"github.com/kukino/Amaru"
 	"os"
+	"sort"
 )
 
 type anthologyImpl struct {
@@ -124,57 +125,74 @@ func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID) []Amaru.DocID {
 	var docids []Amaru.DocID
 	var dossiers []Amaru.Dossier
 	var position []uint32
-	for _, tid := range tids {
-		dossiers = append(dossiers, a.GetDossier(tid))
-		position = append(position, 0)
-	}
+
+	tids = removeDuplicateTokenIDs(tids)
 
 	if len(tids) == 0 {
 		return docids
 	}
 
-	finished := false
-	for {
-		// checks if the end of a dossier has been reach
-		for i := 0; i < len(dossiers); i++ {
-			if dossiers[i].Count() == position[i] {
-				finished = true
-				break
-			}
+	for _, tid := range tids {
+		dossier := a.GetDossier(tid)
+		dossiers = append(dossiers, dossier)
+		if dossier.Count() == 0 {
+			return docids
 		}
-		if finished {
-			break
+		position = append(position, 0)
+	}
+
+	sort.Slice(dossiers, func(i, j int) bool {
+		return dossiers[i].Count() < dossiers[j].Count()
+	})
+
+	for {
+		// Assume match found; verify against first dossier's current DID.
+		did := dossiers[0].Get(position[0])
+		smallestTid := Amaru.InvalidDocID
+		smallestPos := -1
+		match := true
+
+		for i := 0; i < len(dossiers); i++ {
+			currentDid := dossiers[i].Get(position[i])
+
+			// If any dossier's current did don't match, not a match.
+			if i != 0 && currentDid != did {
+				match = false
+			}
+
+			// Determine if current did is smallest to decide next position increment.
+			if currentDid < smallestTid {
+				smallestPos = i
+				smallestTid = currentDid
+			}
+
+			// Check end of any dossier
+			if position[i] == dossiers[i].Count() {
+				return docids
+			}
 		}
 
-		// checks if the current index is the same for all dossiers => match
-		found := true
-		did := dossiers[0].Get(position[0])
-		for i := 1; i < len(dossiers); i++ {
-			if did != dossiers[i].Get(position[i]) {
-				found = false
-			}
-			if !found {
-				break
-			}
-		}
-		if found {
+		// If all DIDs match at current positions, add to result.
+		if match {
 			docids = append(docids, did)
 		}
 
-		// increases the dossier with the smallest number
-		smallestTid := Amaru.InvalidDocID // highest possible token id
-		smallestPos := -1
-		for i := 0; i < len(dossiers); i++ {
-			if dossiers[i].Get(position[i]) < smallestTid {
-				smallestPos = i
-				smallestTid = dossiers[i].Get(position[i])
-			}
-		}
+		// Increment position in dossier with smallest DID to move forward.
 		position[smallestPos]++
-
 	}
+}
 
-	return docids
+func removeDuplicateTokenIDs(tids []Amaru.TokenID) []Amaru.TokenID {
+	seen := make(map[Amaru.TokenID]struct{})
+	j := 0
+	for _, tid := range tids {
+		if _, exists := seen[tid]; !exists {
+			seen[tid] = struct{}{}
+			tids[j] = tid
+			j++
+		}
+	}
+	return tids[:j]
 }
 
 func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, error) {
