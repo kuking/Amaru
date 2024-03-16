@@ -40,6 +40,11 @@ func (d *dossierImpl) Capacity() uint32 {
 	return binary.BigEndian.Uint32(d.aMMap[d.offset+Dossier_CapacityOfs:])
 }
 
+// SetCapacity will not allocate the underlying bytes, this is not a general purpose API but internal.
+func (d *dossierImpl) SetCapacity(cap uint32) {
+	binary.BigEndian.PutUint32(d.aMMap[d.offset+Dossier_CapacityOfs:], cap)
+}
+
 func (d *dossierImpl) Count() uint32 {
 	return binary.BigEndian.Uint32(d.aMMap[d.offset+Dossier_CountOfs:])
 }
@@ -56,6 +61,10 @@ func (d *dossierImpl) Set(n uint32, did Amaru.DocID) {
 		panic("you should know where to set inside the dossier")
 	}
 	binary.BigEndian.PutUint32(d.aMMap[d.offset+Dossier_RecordSize+Dossier_DocIDSize*uint64(n):], uint32(did))
+}
+
+func (d *dossierImpl) SizeInBytes() uint64 {
+	return Dossier_RecordSize + Dossier_DocIDSize*uint64(d.Capacity())
 }
 
 func (d *dossierImpl) Add(did Amaru.DocID) (newCount uint32, err error) {
@@ -139,4 +148,60 @@ func (a *anthologyImpl) setTidOffset(tid Amaru.TokenID, offset uint64) {
 	}
 	start := uint32(tid) * 8
 	binary.BigEndian.PutUint64(a.iMMap[start:], offset)
+}
+
+func (a *anthologyImpl) Compact() error {
+	// this function makes every dossier of the size of current len, shrinking the aMMap and finally truncating it.
+	tid := Amaru.TokenID(0)
+	newOffset := uint64(0) // offset for tid0 is 0
+	var saved uint64
+	for {
+		d := a.GetDossier(tid)
+		if d.Offset() == Amaru.InvalidOffset {
+			break
+		}
+
+		// shrinks Dossier and calculated the saved space
+		prevSize := d.SizeInBytes()
+		d.SetCapacity(d.Count())
+		delta := prevSize - d.SizeInBytes()
+		saved += delta
+
+		// new Offset
+		if newOffset == d.Offset() {
+			// OK we are in the same place, we do nothing.
+		} else {
+			for i := uint64(0); i < d.SizeInBytes(); i++ {
+				a.aMMap[newOffset+i] = a.aMMap[d.Offset()+i]
+			}
+			a.setTidOffset(tid, newOffset)
+		}
+
+		newOffset += d.SizeInBytes()
+		tid++
+	}
+	if fi, err := a.aFile.Stat(); err != nil {
+		return err
+	} else {
+		saved += uint64(fi.Size() - int64(newOffset))
+	}
+	if err := a.aFile.Truncate(int64(newOffset)); err != nil {
+		return err
+	}
+
+	iTrunc := int64(tid+1) * 8 // size of uint64
+	if fi, err := a.iFile.Stat(); err != nil {
+		return err
+	} else {
+		saved += uint64(fi.Size() - iTrunc)
+	}
+	if err := a.iFile.Truncate(iTrunc); err != nil {
+		return err
+	}
+
+	log.Printf("Compacted Anthology size is %.1fMiB (%.2fGiB saved)\n", float64(newOffset)/1024.0/1024.0, float64(saved)/1024.0/1024.0/1024.0)
+	log.Println("Reloading")
+	a.Close()
+	a.Load()
+	return nil
 }

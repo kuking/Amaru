@@ -22,7 +22,7 @@ type anthologyImpl struct {
 func (a *anthologyImpl) Add(did Amaru.DocID, tid Amaru.TokenID) {
 	offset := a.tidOffset(tid)
 	var dossier Amaru.Dossier
-	if offset == uint64(0xffff_ffff_ffff_ffff) {
+	if offset == Amaru.InvalidOffset {
 		dossier = a.newDossier(tid, a.defaultDossierCapacity)
 	} else {
 		dossier = a.GetDossier(tid)
@@ -174,12 +174,6 @@ func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID) []Amaru.DocID {
 	}
 
 	return docids
-}
-
-func (a *anthologyImpl) Compact() error {
-
-	//TODO implement me
-	panic("implement me")
 }
 
 func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, error) {

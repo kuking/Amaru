@@ -8,8 +8,9 @@ const (
 	TextToken TokenType = 0
 	TagToken  TokenType = 1
 
-	InvalidTokenID TokenID = 0xffffffff
-	InvalidDocID   DocID   = 0xffffffff
+	InvalidTokenID TokenID = 0xffff_ffff
+	InvalidDocID   DocID   = 0xfff_fffff
+	InvalidOffset  uint64  = 0xffff_ffff_ffff_ffff
 	MaxTokenLen    int     = 25
 )
 
@@ -87,4 +88,7 @@ type Dossier interface {
 	Len() int
 	Less(i, j int) bool
 	Swap(i, j int)
+	// Internals but useful
+	SetCapacity(uint32)
+	SizeInBytes() uint64
 }

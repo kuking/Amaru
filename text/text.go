@@ -1,6 +1,7 @@
 package text
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/abadojack/whatlanggo"
 	"github.com/kljensen/snowball"
@@ -12,6 +13,11 @@ import (
 
 var normaliserMap map[string]string
 var stopWordsReplacer *strings.Replacer
+var utf8BOM []byte
+var utf16BEBOM []byte
+var utf16LEBOM []byte
+var utf32BEBOM []byte
+var utf32LEBOM []byte
 
 func init() {
 	patterns := []string{
@@ -58,6 +64,12 @@ func init() {
 		replacements = append(replacements, string(r), " ")
 	}
 	stopWordsReplacer = strings.NewReplacer(replacements...)
+
+	utf8BOM = []byte{0xEF, 0xBB, 0xBF}
+	utf16BEBOM = []byte{0xFE, 0xFF}
+	utf16LEBOM = []byte{0xFF, 0xFE}
+	utf32BEBOM = []byte{0x00, 0x00, 0xFE, 0xFF}
+	utf32LEBOM = []byte{0xFF, 0xFE, 0x00, 0x00}
 }
 
 func NormaliseFancyUnicodeToASCII(input string) string {
@@ -167,4 +179,20 @@ func Stems(text string) []string {
 func IsURL(str string) bool {
 	u, err := url.Parse(str)
 	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
+func RemoveBOM(data string) string {
+	byteData := []byte(data)
+	if bytes.HasPrefix(byteData, utf8BOM) {
+		return string(byteData[len(utf8BOM):])
+	} else if bytes.HasPrefix(byteData, utf16BEBOM) {
+		return string(byteData[len(utf16BEBOM):])
+	} else if bytes.HasPrefix(byteData, utf16LEBOM) {
+		return string(byteData[len(utf16LEBOM):])
+	} else if bytes.HasPrefix(byteData, utf32BEBOM) {
+		return string(byteData[len(utf32BEBOM):])
+	} else if bytes.HasPrefix(byteData, utf32LEBOM) {
+		return string(byteData[len(utf32LEBOM):])
+	}
+	return data
 }
