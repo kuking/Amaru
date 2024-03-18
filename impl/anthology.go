@@ -4,7 +4,6 @@ import (
 	"github.com/edsrzf/mmap-go"
 	"github.com/kukino/Amaru"
 	"os"
-	"sort"
 )
 
 type anthologyImpl struct {
@@ -125,6 +124,7 @@ func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID, limit int) []Amaru.
 	var docids []Amaru.DocID
 	var dossiers []Amaru.Dossier
 	var position []uint32
+	var counts []uint32
 
 	tids = removeDuplicateTokenIDs(tids)
 
@@ -139,11 +139,8 @@ func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID, limit int) []Amaru.
 			return docids
 		}
 		position = append(position, 0)
+		counts = append(counts, dossier.Count())
 	}
-
-	sort.Slice(dossiers, func(i, j int) bool {
-		return dossiers[i].Count() < dossiers[j].Count()
-	})
 
 	for {
 		// Assume match found; verify against first dossier's current DID.
@@ -151,37 +148,26 @@ func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID, limit int) []Amaru.
 		smallestTid := Amaru.InvalidDocID
 		smallestPos := -1
 		match := true
-
 		for i := 0; i < len(dossiers); i++ {
 			currentDid := dossiers[i].Get(position[i])
-
-			// If any dossier's current did don't match, not a match.
-			if i != 0 && currentDid != did {
+			if i != 0 && currentDid != did { // If any dossier's current did don't match, not a match.
 				match = false
 			}
-
-			// Determine if current did is smallest to decide next position increment.
-			if currentDid < smallestTid {
+			if currentDid < smallestTid { // Determine if current did is smallest to decide next position increment.
 				smallestPos = i
 				smallestTid = currentDid
 			}
-
-			// Check end of any dossier
-			if position[i] == dossiers[i].Count() {
+			if position[i] == counts[i] { // end of any dossier? we are done
 				return docids
 			}
 		}
-
-		// If all DIDs match at current positions, add to result.
 		if match {
 			docids = append(docids, did)
-			if len(docids) > limit {
+			if len(docids) >= limit {
 				return docids
 			}
 		}
-
-		// Increment position in dossier with smallest DID to move forward.
-		position[smallestPos]++
+		position[smallestPos]++ // Increment position in dossier with smallest DID to move forward.
 	}
 }
 

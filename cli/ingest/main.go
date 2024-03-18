@@ -53,19 +53,38 @@ func ingest() {
 
 	docsChan := make(chan Document, 100)
 	go readJsons(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/dataset/profiles/"), docsChan)
+
 	stemsChan := make(chan StemmedDoc, 100)
 	var wg sync.WaitGroup
-	for th := 0; th < 100; th++ { // 100 threads stemming, etc.
+	for th := 0; th < 20; th++ { // 20 threads stemming, etc.
 		wg.Add(1)
 		go stemDocuments(docsChan, stemsChan, &wg)
 	}
+
 	go func() {
 		wg.Wait()
 		close(stemsChan)
 	}()
 
-	c := 0
+	log.Println("Preloading: loading, parsing, stemming then sorting ...")
+	nn := 0
+	var stemsAll []StemmedDoc
 	for stem := range stemsChan {
+		stemsAll = append(stemsAll, stem)
+		nn++
+		if nn%100000 == 99999 {
+			log.Printf("%vk ... \n", nn/1_000)
+		}
+	}
+
+	log.Println("Sorting by ranking so firsts documents are more valued")
+	sort.Slice(stemsAll, func(i, j int) bool {
+		return stemsAll[i].Ranking > stemsAll[j].Ranking
+	})
+	log.Println("Sorted done")
+
+	c := 0
+	for _, stem := range stemsAll { // stemsChan {
 
 		var tids []Amaru.TokenID
 		for _, oneStem := range stem.Stems {
@@ -83,7 +102,7 @@ func ingest() {
 			anth.Add(did, tid)
 		}
 
-		if c%10_000 == 0 && c > 0 {
+		if c%100_000 == 0 && c > 0 {
 			elapsed := time.Since(t0)
 			log.Printf("%d documents ingested; thoughput is %.2f docs/s\n", did, float64(c)/elapsed.Seconds())
 		}

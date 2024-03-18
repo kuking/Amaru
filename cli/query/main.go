@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"sort"
 	"strings"
 	"time"
 )
@@ -53,15 +52,10 @@ func main() {
 		} else {
 			t0 := time.Now()
 			tids := amaru.Tokens().GetIds(Amaru.TextToken, text.Stems(cmd))
-			docids := amaru.Anthology().FindDocIDsWith(tids, 1000)
-			t1 := time.Now()
+			docids := amaru.Anthology().FindDocIDsWith(tids, 5_000)
 			docs := amaru.Documents().GetAll(docids)
-			sort.Slice(docs, func(i, j int) bool {
-				return docs[i].Ranking > docs[j].Ranking
-			})
-			elapsedSets := t1.Sub(t0)
 			elapsed := time.Since(t0)
-			log.Printf("Search took %v for %d results (%v for intersection) \n", elapsed, len(docs), elapsedSets)
+			log.Printf("Search took %v for %d results.\n", elapsed, len(docs))
 
 			for n, doc := range docs {
 				fmt.Printf("%v\t", doc.URL)
