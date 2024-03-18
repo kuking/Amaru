@@ -3,6 +3,7 @@ package impl
 import (
 	"github.com/edsrzf/mmap-go"
 	"github.com/kukino/Amaru"
+	"math"
 	"os"
 )
 
@@ -123,7 +124,7 @@ func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID, limit int) []Amaru.
 
 	var docids []Amaru.DocID
 	var dossiers []Amaru.Dossier
-	var position []uint32
+	var pointers []uint32
 	var counts []uint32
 
 	tids = removeDuplicateTokenIDs(tids)
@@ -135,30 +136,26 @@ func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID, limit int) []Amaru.
 	for _, tid := range tids {
 		dossier := a.GetDossier(tid)
 		dossiers = append(dossiers, dossier)
-		if dossier.Count() == 0 {
+		pointers = append(pointers, 0)
+		count := dossier.Count()
+		counts = append(counts, count)
+		if count == 0 {
 			return docids
 		}
-		position = append(position, 0)
-		counts = append(counts, dossier.Count())
 	}
 
 	for {
 		// Assume match found; verify against first dossier's current DID.
-		did := dossiers[0].Get(position[0])
-		smallestTid := Amaru.InvalidDocID
-		smallestPos := -1
+		did := dossiers[0].Get(pointers[0])
+		biggestDid := did
 		match := true
-		for i := 0; i < len(dossiers); i++ {
-			currentDid := dossiers[i].Get(position[i])
-			if i != 0 && currentDid != did { // If any dossier's current did don't match, not a match.
+		for i := 1; i < len(dossiers); i++ {
+			currentDid := dossiers[i].Get(pointers[i])
+			if currentDid != did { // If any dossier's current did don't match, not a match.
 				match = false
 			}
-			if currentDid < smallestTid { // Determine if current did is smallest to decide next position increment.
-				smallestPos = i
-				smallestTid = currentDid
-			}
-			if position[i] == counts[i] { // end of any dossier? we are done
-				return docids
+			if currentDid > biggestDid {
+				biggestDid = currentDid
 			}
 		}
 		if match {
@@ -166,8 +163,39 @@ func (a *anthologyImpl) FindDocIDsWith(tids []Amaru.TokenID, limit int) []Amaru.
 			if len(docids) >= limit {
 				return docids
 			}
+			for i := 0; i < len(dossiers); i++ {
+				pointers[i]++
+				if pointers[i] == counts[i] {
+					return docids
+				}
+			}
+		} else {
+			for i := 0; i < len(dossiers); i++ {
+				if dossiers[i].Get(pointers[i]) < biggestDid {
+					left, right := pointers[i], counts[i]-1
+					lastValidMid := uint32(math.MaxUint32) // last valid position.
+					for left <= right {
+						mid := left + (right-left)/2
+						if dossiers[i].Get(mid) < biggestDid {
+							left = mid + 1
+						} else {
+							lastValidMid = mid
+							right = mid - 1
+						}
+					}
+					// Move pointer past the last position less than biggestDid.
+					if lastValidMid != math.MaxUint32 {
+						pointers[i] = lastValidMid
+					} else {
+						pointers[i] = left
+					}
+					// If we reach the end, return the collected docids.
+					if pointers[i] >= counts[i] {
+						return docids
+					}
+				}
+			}
 		}
-		position[smallestPos]++ // Increment position in dossier with smallest DID to move forward.
 	}
 }
 
