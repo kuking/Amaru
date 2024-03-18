@@ -128,8 +128,8 @@ func ingest() {
 			print(".")
 			_ = os.Stdout.Sync()
 		}
-		println()
 	}
+	println()
 
 	log.Println("Compacting anthology ...")
 	if err = anth.Compact(); err != nil {
