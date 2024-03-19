@@ -7,6 +7,7 @@ import (
 	"github.com/kukino/Amaru/impl"
 	"github.com/kukino/Amaru/text"
 	"log"
+	"math"
 	"os"
 	"path"
 	"path/filepath"
@@ -14,10 +15,6 @@ import (
 	"sync"
 	"time"
 )
-
-// TODO: Ingest Documents sorted by descending ranking, so the intersection can be stopped at X results, and they will be the top ones.
-// did=1 is the highest document existing, did=2 is the second, and so fort ... therefore the intersection can stop as soon as it finds X elements
-// and they will be the top elements.
 
 type JSON map[string]interface{}
 type Document struct {
@@ -181,11 +178,19 @@ func stemDocuments(docsChan chan Document, stemChan chan StemmedDoc, wg *sync.Wa
 
 		handle := doc.Json["handle"].(string)
 		description := doc.Json["desc.txt"].(string)
-		likes := doc.Json["likes"].(float64)
+		rating := math.Max(doc.Json["likes"].(float64), 0)
+		rating += math.Max(doc.Json["followers"].(float64), 0)
+		rating += math.Max(doc.Json["lives.qty"].(float64), 0)
+		rating += math.Max(doc.Json["posts.qty"].(float64), 0)
+		rating += math.Max(doc.Json["media.qty"].(float64), 0)
+		rating += math.Max(doc.Json["videos.qty"].(float64), 0)
+		rating += math.Max(doc.Json["pics.qty"].(float64), 0)
 		location := ""
 		if doc.Json["loc"] != nil {
 			location = doc.Json["loc"].(string)
 		}
+
+		// tags also should be added here
 
 		doc := description + " " + location + " " + handle
 		doc = text.RemoveBOM(doc)
@@ -195,7 +200,7 @@ func stemDocuments(docsChan chan Document, stemChan chan StemmedDoc, wg *sync.Wa
 
 		sd := StemmedDoc{
 			Url:     fmt.Sprintf("pof://%s", handle),
-			Ranking: float32(likes),
+			Ranking: float32(rating),
 			Stems:   text.Stems(doc),
 		}
 		stemChan <- sd

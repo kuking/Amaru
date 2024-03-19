@@ -169,7 +169,9 @@ func Stems(text string) []string {
 			continue
 		}
 		if stemmed, err := snowball.Stem(word, lang, true); err == nil {
-			res = append(res, stemmed)
+			if len(stemmed) > 1 { // do not stemm 1 letter characters
+				res = append(res, stemmed)
+			}
 		} else {
 			fmt.Print(err)
 		}
