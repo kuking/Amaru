@@ -29,7 +29,7 @@ type StemmedDoc struct {
 
 func ingest() {
 	t0 := time.Now()
-	log.Println("Indexing ...")
+	log.Println("Ingesting ...")
 
 	basePath, err := os.UserHomeDir()
 	if err != nil {
@@ -63,24 +63,27 @@ func ingest() {
 		close(stemsChan)
 	}()
 
+	tp0 := time.Now()
 	log.Println("Preloading: loading, parsing, stemming then sorting ...")
-	nn := 0
+	c := 0
 	var stemsAll []StemmedDoc
 	for stem := range stemsChan {
 		stemsAll = append(stemsAll, stem)
-		nn++
-		if nn%100000 == 99999 {
-			log.Printf("%vk ... \n", nn/1_000)
+		c++
+		if c%100000 == 99999 {
+			elapsed := time.Since(tp0)
+			log.Printf("%vk documents prepared; thoughput is %.1f docs/s ...\n", c/1_000, float64(c)/elapsed.Seconds())
 		}
 	}
 
-	log.Println("Sorting by ranking so firsts documents are more valued")
+	log.Println("Sorting documents by ranking so dossiers do not need sorting during search")
 	sort.Slice(stemsAll, func(i, j int) bool {
 		return stemsAll[i].Ranking > stemsAll[j].Ranking
 	})
 	log.Println("Sorted done")
 
-	c := 0
+	ti0 := time.Now()
+	c = 0
 	for _, stem := range stemsAll { // stemsChan {
 
 		var tids []Amaru.TokenID
@@ -100,13 +103,12 @@ func ingest() {
 		}
 
 		if c%100_000 == 0 && c > 0 {
-			elapsed := time.Since(t0)
-			log.Printf("%d documents ingested; thoughput is %.2f docs/s\n", did, float64(c)/elapsed.Seconds())
+			elapsed := time.Since(ti0)
+			log.Printf("%dk documents ingested; thoughput is %.1f docs/s ...\n", did/1000, float64(c)/elapsed.Seconds())
 		}
 
 		c++
 		if c%5_000_000_000 == 0 { // never, really
-			println(c, "...")
 			if err := amaru.Save(); err != nil {
 				panic(err)
 			}
@@ -117,29 +119,16 @@ func ingest() {
 		}
 	}
 
-	log.Println("Sorting all Dossiers, not really necessary but ... ")
-	log.Println("Dossiers (one per Token):", tokens.Count())
-	for t := 0; t < tokens.Count(); t++ {
-		anth.GetDossier(Amaru.TokenID(t)).Sort()
-		if t%1000 == 0 {
-			print(".")
-			_ = os.Stdout.Sync()
-		}
-	}
-	println()
-
 	log.Println("Compacting anthology ...")
 	if err = anth.Compact(); err != nil {
 		log.Fatal(err)
 	}
-	log.Println("done")
-
 	if err := amaru.Save(); err != nil {
 		panic(err)
 	}
 
 	elapsed := time.Since(t0)
-	log.Printf("Total time was %v throughput was %.2f docs/s", elapsed.Truncate(time.Millisecond), float64(c)/elapsed.Seconds())
+	log.Printf("Ingestion took %v; Total throughput was %.1f docs/s", elapsed.Truncate(time.Millisecond), float64(c)/elapsed.Seconds())
 }
 
 func readJsons(basePath string, ch chan Document) {

@@ -58,7 +58,7 @@ func main() {
 			log.Printf("Search took %v for %d results.\n", elapsed, len(docs))
 
 			for n, doc := range docs {
-				fmt.Printf("%v\t", doc.URL)
+				fmt.Printf("%v (%.1fk)\t", doc.URL, doc.Ranking/1000)
 				if n > 100 {
 					break
 				}

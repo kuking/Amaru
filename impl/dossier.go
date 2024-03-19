@@ -7,6 +7,7 @@ import (
 	"github.com/kukino/Amaru"
 	"log"
 	"sort"
+	"time"
 )
 
 const (
@@ -153,9 +154,11 @@ func (a *anthologyImpl) setTidOffset(tid Amaru.TokenID, offset uint64) {
 
 func (a *anthologyImpl) Compact() error {
 	// this function makes every dossier of the size of current len, shrinking the aMMap and finally truncating it.
+	t0 := time.Now()
 	tid := Amaru.TokenID(0)
 	newOffset := uint64(0) // offset for tid0 is 0
 	var saved uint64
+	c := 0
 	for {
 		d := a.GetDossier(tid)
 		if d.Offset() == Amaru.InvalidOffset {
@@ -167,6 +170,12 @@ func (a *anthologyImpl) Compact() error {
 		d.SetCapacity(d.Count())
 		delta := prevSize - d.SizeInBytes()
 		saved += delta
+
+		c++
+		if c%100_000 == 99_999 {
+			elapsed := time.Since(t0)
+			log.Printf("%dk dossiers compacted; %.1fGiB saved; thoughput is %.1f dossiers/sec ...\n", c/1000, float64(saved)/1024.0/1024.0/1024.0, float64(c)/elapsed.Seconds())
+		}
 
 		// new Offset
 		if newOffset == d.Offset() {
@@ -200,9 +209,16 @@ func (a *anthologyImpl) Compact() error {
 		return err
 	}
 
-	log.Printf("Compacted Anthology size is %.1fMiB (%.2fGiB saved)\n", float64(newOffset)/1024.0/1024.0, float64(saved)/1024.0/1024.0/1024.0)
-	log.Println("Reloading")
-	a.Close()
-	a.Load()
+	log.Printf("Compacted Anthology is %.1fMiB (%.2fGiB saved)\n", float64(newOffset)/1024.0/1024.0, float64(saved)/1024.0/1024.0/1024.0)
+	log.Println("Closing after Compacting ...")
+	if err := a.Close(); err != nil {
+		return err
+	}
+	log.Println("Reloading after Compacting ...")
+	if err := a.Load(); err != nil {
+		return err
+	}
+	elapsed := time.Since(t0)
+	log.Printf("Compacting finished Successfully in %v!\n", elapsed.Truncate(time.Second))
 	return nil
 }
