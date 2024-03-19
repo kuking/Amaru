@@ -80,6 +80,7 @@ func (d *documentsImpl) Load() error {
 			return fmt.Errorf("document file, invalid line format: %s", line)
 		}
 
+		url := parts[1]
 		ranking, err := strconv.ParseFloat(parts[0], 32)
 		if err != nil {
 			return err
@@ -87,9 +88,12 @@ func (d *documentsImpl) Load() error {
 
 		d.documents = append(d.documents, Amaru.Document{
 			Did:     did,
-			URL:     parts[1],
+			URL:     url,
 			Ranking: float32(ranking),
 		})
+		if d.writable { // avoids using unnecessary memory
+			d.cache[url] = did
+		}
 		did++
 	}
 	if err := scanner.Err(); err != nil {
