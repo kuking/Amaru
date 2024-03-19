@@ -43,7 +43,9 @@ func (a *anthologyImpl) Load() error {
 	}
 	if fi, err := a.aFile.Stat(); err == nil {
 		if fi.Size() == 0 {
-			a.aFile.Truncate(a.defaultAnthologySizeMiB * 1024 * 1024)
+			if err := a.aFile.Truncate(a.defaultAnthologySizeMiB * 1024 * 1024); err != nil {
+				return err
+			}
 		}
 	} else {
 		return err
@@ -60,7 +62,9 @@ func (a *anthologyImpl) Load() error {
 	empty := false
 	if fi, err := a.iFile.Stat(); err == nil {
 		if fi.Size() == 0 {
-			a.iFile.Truncate(a.defaultIndexSizeTks * 8 /*uint64*/)
+			if err := a.iFile.Truncate(a.defaultIndexSizeTks * 8 /*uint64*/); err != nil {
+				return err
+			}
 			empty = true
 		}
 	} else {

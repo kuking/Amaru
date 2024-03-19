@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	amaru := openAmaru()
+	amaru, store := openAmaruAndStore()
 
 	fmt.Printf("Index: %s\n", amaru.Path())
 	fmt.Printf("Stats:\n")
@@ -58,8 +58,8 @@ func main() {
 			log.Printf("Search took %v for %d results.\n", elapsed, len(docs))
 
 			for n, doc := range docs {
-				fmt.Printf("%v (%.1fk)\t", doc.URL, doc.Ranking/1000)
-				if n > 100 {
+				fmt.Printf("%v (%.1fk) %.30s\n", doc.URL, doc.Ranking/1000, string(store.GetById(uint32(doc.Did))))
+				if n > 20 {
 					break
 				}
 			}
@@ -69,7 +69,7 @@ func main() {
 	}
 }
 
-func openAmaru() Amaru.Amaru {
+func openAmaruAndStore() (Amaru.Amaru, Amaru.Store) {
 	basePath, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -81,7 +81,14 @@ func openAmaru() Amaru.Amaru {
 	if err := amaru.Load(); err != nil {
 		panic(err)
 	}
-	return amaru
+	store, err := impl.NewStore(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/idx1/profiles"), false)
+	if err != nil {
+		panic(err)
+	}
+	if err := store.Load(); err != nil {
+		panic(err)
+	}
+	return amaru, store
 }
 
 func readLine(reader *bufio.Reader) string {

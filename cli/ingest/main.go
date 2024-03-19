@@ -25,6 +25,7 @@ type StemmedDoc struct {
 	Url     string
 	Ranking float32
 	Stems   []string
+	Store   []byte
 }
 
 func ingest() {
@@ -39,8 +40,14 @@ func ingest() {
 	if err != nil {
 		panic(err)
 	}
-
 	if err := amaru.Create(); err != nil {
+		panic(err)
+	}
+	store, err := impl.NewStore(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/idx1/profiles"), true)
+	if err != nil {
+		panic(err)
+	}
+	if err := store.Create(); err != nil {
 		panic(err)
 	}
 
@@ -101,6 +108,7 @@ func ingest() {
 		for _, tid := range tids {
 			anth.Add(did, tid)
 		}
+		store.Set(stem.Url, uint32(did), stem.Store)
 
 		if c%100_000 == 0 && c > 0 {
 			elapsed := time.Since(ti0)
@@ -123,10 +131,17 @@ func ingest() {
 	if err = anth.Compact(); err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Saving Amaru ... ")
 	if err := amaru.Save(); err != nil {
 		panic(err)
 	}
-
+	log.Println("Compacting and saving store ...")
+	if err := store.Compact(); err != nil {
+		panic(err)
+	}
+	if err := store.Save(); err != nil {
+		panic(err)
+	}
 	elapsed := time.Since(t0)
 	log.Printf("Ingestion took %v; Total throughput was %.1f docs/s", elapsed.Truncate(time.Millisecond), float64(c)/elapsed.Seconds())
 }
@@ -191,6 +206,7 @@ func stemDocuments(docsChan chan Document, stemChan chan StemmedDoc, wg *sync.Wa
 			Url:     fmt.Sprintf("pof://%s", handle),
 			Ranking: float32(rating),
 			Stems:   text.Stems(doc),
+			Store:   []byte(description),
 		}
 		stemChan <- sd
 	}
