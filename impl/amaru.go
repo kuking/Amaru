@@ -2,7 +2,7 @@ package impl
 
 import (
 	"errors"
-	Amaru "github.com/kukino/Amaru"
+	Amaru "github.com/kuking/Amaru"
 	"os"
 	"path"
 )

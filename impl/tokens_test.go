@@ -2,7 +2,7 @@ package impl
 
 import (
 	"fmt"
-	"github.com/kukino/Amaru"
+	"github.com/kuking/Amaru"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"

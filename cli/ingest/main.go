@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/kukino/Amaru"
-	"github.com/kukino/Amaru/impl"
-	"github.com/kukino/Amaru/text"
+	"github.com/kuking/Amaru"
+	"github.com/kuking/Amaru/impl"
+	"github.com/kuking/Amaru/text"
 	"log"
 	"math"
 	"os"

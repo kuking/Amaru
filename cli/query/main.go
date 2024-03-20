@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/kukino/Amaru"
-	"github.com/kukino/Amaru/impl"
-	"github.com/kukino/Amaru/text"
+	"github.com/kuking/Amaru"
+	"github.com/kuking/Amaru/impl"
+	"github.com/kuking/Amaru/text"
 	"log"
 	"os"
 	"path"
@@ -58,7 +58,8 @@ func main() {
 			log.Printf("Search took %v for %d results.\n", elapsed, len(docs))
 
 			for n, doc := range docs {
-				fmt.Printf("%v (%.1fk) %.30s\n", doc.URL, doc.Ranking/1000, string(store.GetById(uint32(doc.Did))))
+				profile := string(store.GetById(uint32(doc.Did)))
+				fmt.Printf("[%v] (%.1fk) %v\n%.200s\n", n, doc.Ranking/1000, doc.URL, strings.ReplaceAll(profile, "\n", ""))
 				if n > 20 {
 					break
 				}

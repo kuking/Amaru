@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"github.com/kukino/Amaru"
+	"github.com/kuking/Amaru"
 	"io"
 	"os"
 	"unicode/utf8"

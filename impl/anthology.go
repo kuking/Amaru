@@ -2,7 +2,7 @@ package impl
 
 import (
 	"github.com/edsrzf/mmap-go"
-	"github.com/kukino/Amaru"
+	"github.com/kuking/Amaru"
 	"math"
 	"os"
 )

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/edsrzf/mmap-go"
-	"github.com/kukino/Amaru"
+	"github.com/kuking/Amaru"
 	"os"
 	"sort"
 	"strconv"

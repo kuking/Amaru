@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/kukino/Amaru"
+	"github.com/kuking/Amaru"
 	"os"
 	"strconv"
 	"strings"

@@ -1,4 +1,4 @@
-module github.com/kukino/Amaru
+module github.com/kuking/Amaru
 
 go 1.20
 

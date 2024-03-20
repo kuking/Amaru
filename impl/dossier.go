@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/edsrzf/mmap-go"
-	"github.com/kukino/Amaru"
+	"github.com/kuking/Amaru"
 	"log"
 	"sort"
 	"time"
