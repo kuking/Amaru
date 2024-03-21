@@ -168,7 +168,7 @@ func (s *storeImpl) Load() error {
 		}
 		key := parts[2]
 
-		s.keyCache[key] = id
+		s.keyCache[key] = offset
 		s.idCache[uint32(id)] = offset
 		s.idKeyCache[uint32(id)] = key
 	}
