@@ -38,7 +38,7 @@ func (s *storeImpl) GetId(key string) uint32 {
 
 func (s *storeImpl) getByOffset(offset uint64) []byte {
 	length := binary.BigEndian.Uint32(s.mmap[offset:])
-	return s.mmap[offset : offset+uint64(length)]
+	return s.mmap[offset+4 : offset+4+uint64(length)]
 }
 func (s *storeImpl) GetByKey(key string) []byte {
 	if offset, exist := s.keyCache[key]; exist {
