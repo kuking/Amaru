@@ -21,6 +21,7 @@ type Amaru interface {
 	Path() string
 	Load() error
 	Save() error
+	Close() error
 	Exist() bool
 	Clear()
 	Create() error

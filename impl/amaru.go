@@ -49,6 +49,12 @@ func (a *amaruImpl) Save() error {
 	return nil
 }
 
+func (a *amaruImpl) Close() error {
+	a.tokens.Clear()
+	a.documents.Clear()
+	return a.anthology.Close()
+}
+
 func (a *amaruImpl) Exist() bool {
 	return a.tokens.Exist() && a.documents.Exist() && a.anthology.Exist()
 }
