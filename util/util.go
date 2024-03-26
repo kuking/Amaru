@@ -16,3 +16,16 @@ func SafeSlice[T any](slice []T, offset, limit int) []T {
 
 	return slice[offset:end]
 }
+
+// RemoveDuplicates removes duplicates from a slice.
+func RemoveDuplicates[T comparable](slice []T) []T {
+	seen := make(map[T]bool)
+	result := []T{}
+	for _, item := range slice {
+		if !seen[item] {
+			seen[item] = true
+			result = append(result, item)
+		}
+	}
+	return result
+}

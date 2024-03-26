@@ -6,6 +6,7 @@ import (
 	"github.com/kuking/Amaru"
 	"github.com/kuking/Amaru/impl"
 	"github.com/kuking/Amaru/text"
+	"github.com/kuking/Amaru/util"
 	"log"
 	"math"
 	"os"
@@ -99,7 +100,8 @@ func ingest() {
 			tids = append(tids, tid)
 		}
 
-		// tokenIds must be added in order so the anthology can be Compacted
+		// tokenIds must not be duplicated and added in order so the anthology can be compacted
+		tids = util.RemoveDuplicates(tids)
 		sort.Slice(tids, func(i, j int) bool {
 			return tids[i] < tids[j]
 		})
