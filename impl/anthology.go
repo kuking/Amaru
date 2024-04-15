@@ -221,9 +221,9 @@ func NewAnthology(anthologyBasePath string, writable bool) (Amaru.Anthology, err
 		aPath:                   anthologyBasePath,
 		iPath:                   anthologyBasePath + ".idx",
 		lastKnownEoF:            0,
-		defaultDossierCapacity:  2_000_000,   // 2M Docs
-		defaultAnthologySizeMiB: 100_000_000, // 100TB
-		defaultIndexSizeTks:     5_000_000,   // 5M Tokens
+		defaultDossierCapacity:  1_000_000,  // 1M Docs (docs sharing the same token)
+		defaultAnthologySizeMiB: 16_000_000, // 16TB max-file size fot Ext4 w/4K block size
+		defaultIndexSizeTks:     3_000_000,  // 3M Tokens (number of Dossiers)
 	}
 	return &anthology, nil
 }
