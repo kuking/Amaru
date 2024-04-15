@@ -6,6 +6,7 @@ import (
 	"github.com/kuking/Amaru"
 	"github.com/kuking/Amaru/impl"
 	"github.com/kuking/Amaru/text"
+	infinimap "github.com/kuking/infinimap/V1"
 	"log"
 	"os"
 	"path"
@@ -58,7 +59,12 @@ func main() {
 			log.Printf("Search took %v for %d results.\n", elapsed, len(docs))
 
 			for n, doc := range docs {
-				profile := string(store.GetById(uint32(doc.Did)))
+				url := amaru.Documents().Get(doc.Did).URL
+				profileBytes, found := store.Get(url)
+				profile := "not found"
+				if found {
+					profile = string(profileBytes)
+				}
 				fmt.Printf("[%v] (%.1fk) %v\n%.200s\n", n, doc.Ranking/1000, doc.URL, strings.ReplaceAll(profile, "\n", ""))
 				if n > 20 {
 					break
@@ -70,7 +76,7 @@ func main() {
 	}
 }
 
-func openAmaruAndStore() (Amaru.Amaru, Amaru.Store) {
+func openAmaruAndStore() (Amaru.Amaru, infinimap.Map[string, []byte]) {
 	basePath, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -82,11 +88,8 @@ func openAmaruAndStore() (Amaru.Amaru, Amaru.Store) {
 	if err := amaru.Load(); err != nil {
 		panic(err)
 	}
-	store, err := impl.NewStore(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/idx1/profiles"), false)
+	store, err := infinimap.Open[string, []byte](path.Join(basePath, "/KUKINO/GO/Amaru/tmp/idx1/profiles"))
 	if err != nil {
-		panic(err)
-	}
-	if err := store.Load(); err != nil {
 		panic(err)
 	}
 	return amaru, store

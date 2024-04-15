@@ -7,6 +7,7 @@ import (
 	"github.com/kuking/Amaru/impl"
 	"github.com/kuking/Amaru/text"
 	"github.com/kuking/Amaru/util"
+	infinimap "github.com/kuking/infinimap/V1"
 	"log"
 	"math"
 	"os"
@@ -44,20 +45,14 @@ func ingest() {
 	if err := amaru.Create(); err != nil {
 		panic(err)
 	}
-	store, err := impl.NewStore(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/idx1/profiles"), true)
-	if err != nil {
-		panic(err)
-	}
-	if err := store.Create(); err != nil {
-		panic(err)
-	}
 
+	iStore, err := infinimap.Create[string, []byte](path.Join(basePath, "/KUKINO/GO/Amaru/tmp/idx1/profiles"), infinimap.NewCreateParameters())
 	tokens := amaru.Tokens()
 	docs := amaru.Documents()
 	anth := amaru.Anthology()
 
 	docsChan := make(chan Document, 100)
-	go readJsons(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/dataset/profiles/"), docsChan)
+	go readJsons(path.Join(basePath, "/KUKINO/GO/Amaru/tmp/dataset/profiles/a/"), docsChan)
 
 	stemsChan := make(chan StemmedDoc, 100)
 	var wg sync.WaitGroup
@@ -110,7 +105,11 @@ func ingest() {
 		for _, tid := range tids {
 			anth.Add(did, tid)
 		}
-		store.Set(stem.Url, uint32(did), stem.Store)
+
+		_, _, err = iStore.Put(stem.Url, stem.Store)
+		if err != nil {
+			log.Fatalln(err)
+		}
 
 		if c%100_000 == 0 && c > 0 {
 			elapsed := time.Since(ti0)
@@ -138,11 +137,12 @@ func ingest() {
 		panic(err)
 	}
 	log.Println("Compacting and saving store ...")
-	if err := store.Compact(); err != nil {
-		panic(err)
+	iStore, err = iStore.Compact(infinimap.NewCompactParameters().WithMinimumFileSize(true).WithMinimumCapacity(true))
+	if err != nil {
+		log.Fatalln(err)
 	}
-	if err := store.Save(); err != nil {
-		panic(err)
+	if err = iStore.Close(); err != nil {
+		log.Fatal(err)
 	}
 	elapsed := time.Since(t0)
 	log.Printf("Ingestion took %v; Total throughput was %.1f docs/s", elapsed.Truncate(time.Millisecond), float64(c)/elapsed.Seconds())

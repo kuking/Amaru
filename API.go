@@ -9,7 +9,7 @@ const (
 	TagToken  TokenType = 1
 
 	InvalidTokenID TokenID = 0xffff_ffff
-	InvalidDocID   DocID   = 0xfff_fffff
+	InvalidDocID   DocID   = 0xffff_ffff
 	InvalidOffset  uint64  = 0xffff_ffff_ffff_ffff
 	MaxTokenLen    int     = 25
 )
@@ -92,18 +92,4 @@ type Dossier interface {
 	// Internals but useful
 	SetCapacity(uint32)
 	SizeInBytes() uint64
-}
-
-type Store interface {
-	GetId(key string) uint32
-	GetByKey(key string) []byte
-	GetById(id uint32) []byte
-	Set(key string, id uint32, data []byte) bool
-	Clear()
-	Close() error
-	Create() error
-	Load() error
-	Save() error
-	Exist() bool
-	Compact() error
 }
