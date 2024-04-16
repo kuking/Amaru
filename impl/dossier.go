@@ -181,9 +181,7 @@ func (a *anthologyImpl) Compact() error {
 		if newOffset == d.Offset() {
 			// OK we are in the same place, we do nothing.
 		} else {
-			for i := uint64(0); i < d.SizeInBytes(); i++ {
-				a.aMMap[newOffset+i] = a.aMMap[d.Offset()+i]
-			}
+			copy(a.aMMap[newOffset:], a.aMMap[d.Offset():d.Offset()+d.SizeInBytes()])
 			a.setTidOffset(tid, newOffset)
 		}
 
