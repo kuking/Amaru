@@ -2,6 +2,7 @@ package text
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -77,4 +78,63 @@ func TestRemoveEmojis(t *testing.T) {
 		"🇳🇵🇳🇷🇳🇺🇳🇿🇴🇲🇵🇦🇵🇪🇵🇫🇵🇬🇵🇭🇵🇰🇵🇱🇵🇲🇵🇳🇵🇷🇵🇸🇵🇹🇵🇼🇵🇾🇶🇦🇷🇪🇷🇴🇷🇸🇷🇺🇷🇼🇸🇦🇸🇧🇸🇨🇸🇩🇸🇪🇸🇬🇸🇭🇸🇮🇸🇯🇸🇰🇸🇱🇸🇲🇸🇳🇸🇴🇸🇷🇸🇸🇸🇹🇸🇻🇸🇽🇸🇾🇸🇿🇹🇦🇹🇨🇹🇩🇹🇫🇹🇬🇹🇭🇹🇯🇹🇰🇹🇱🇹🇲🇹🇳🇹🇴🇹🇷🇹🇹🇹🇻🇹🇼🇹🇿🇺🇦🇺🇬🇺🇳"+
 		"🇺🇸🇺🇾🇺🇿🇻🇦🇻🇪🇻🇬🇻🇮🇻🇳🇻🇺🇼🇫🇼🇸🇽🇰🇾🇪🇾🇹🇿🇦🇿🇲🇿🇼🇺🇲"))
 
+}
+
+func TestTags(t *testing.T) {
+	defs := map[string]string{
+		"gold": "money", "silver": "money", "bitcoin": "money",
+		"cat": "animal", "dog": "animal", "elephant": "animal", "monkey": "animal",
+		"red": "color", "yellow": "color", "green": "color",
+	}
+
+	assert.Equal(t, []string{}, Tags("", defs))
+	assert.Equal(t, []string{}, Tags("hello world", defs))
+	assert.Equal(t, []string{"animal"}, Tags("hello MONKEY world", defs))
+
+	res := Tags("silver monkey red", defs)
+	assert.Contains(t, res, "money")
+	assert.Contains(t, res, "animal")
+	assert.Contains(t, res, "color")
+	assert.Len(t, res, 3)
+
+	res = Tags("gold silver bitcoin BitCoin cat CaT dog elephant monkey red yellow green", defs)
+	assert.Contains(t, res, "money")
+	assert.Contains(t, res, "animal")
+	assert.Contains(t, res, "color")
+	assert.Len(t, res, 3)
+}
+
+func TestParseTagsDefinition(t *testing.T) {
+	definition := `
+
+=animal
++cat
++dog
++elephant
++monkey
+
+# comments
+=money
++bitcoin
++gold
++silver
+
+=coLOr
++red
++green
++BLUe
+
+
+`
+	defs, err := ParseTagsDefinition(strings.NewReader(definition))
+	assert.NoError(t, err)
+
+	assert.Len(t, defs, 10)
+	assert.Contains(t, defs, "red")
+
+	res := Tags("gold silver bitcoin BitCoin cat CaT dog elephant monkey red yellow green", defs)
+	assert.Contains(t, res, "money")
+	assert.Contains(t, res, "animal")
+	assert.Contains(t, res, "color")
+	assert.Len(t, res, 3)
 }

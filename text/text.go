@@ -1,11 +1,13 @@
 package text
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"github.com/abadojack/whatlanggo"
 	"github.com/kljensen/snowball"
 	"github.com/rivo/uniseg"
+	"io"
 	"net/url"
 	"regexp"
 	"strings"
@@ -177,6 +179,52 @@ func Stems(text string) []string {
 		}
 	}
 	return res
+}
+
+// Tags given a text it will return an array of tags that are present in the text. tags are defined in a map
+func Tags(text string, defs map[string]string) []string {
+	found := map[string]bool{}
+	for _, word := range strings.Fields(text) {
+		keyword := strings.ToLower(word)
+		if tag, has := defs[keyword]; has {
+			found[tag] = true
+		}
+	}
+	res := []string{}
+	for tag, _ := range found {
+		res = append(res, tag)
+	}
+	return res
+}
+
+func ParseTagsDefinition(in io.Reader) (map[string]string, error) {
+	res := map[string]string{}
+	bin := bufio.NewReader(in)
+	tag := ""
+	for {
+		line, err := bin.ReadString('\n')
+		if err == io.EOF {
+			return res, nil
+		} else if err != nil {
+			return nil, err
+		}
+		line = strings.TrimSuffix(line, "\n")
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		cmd := line[0]
+		val := strings.ToLower(line[1:])
+		if cmd == '=' { // definition
+			tag = val
+		} else if cmd == '+' {
+			res[val] = tag
+		} else if cmd == '#' {
+			// comments are ok
+		} else {
+			return nil, fmt.Errorf("invalid first character '%c' in tag definition: %s", cmd, line)
+		}
+	}
 }
 
 func IsURL(str string) bool {
